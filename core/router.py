@@ -53,7 +53,7 @@ class CommandRouter:
             res = self.volume.set_volume(100)
             result = {"action": "volume", "reply": res, "emotion": "happy"}
 
-        elif "громкость на" in t:
+        elif "громкость" in t or "звук" in t:
             match = re.search(r"\d+", t)
             if match:
                 val = int(match.group())
