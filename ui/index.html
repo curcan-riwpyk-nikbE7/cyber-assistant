@@ -713,11 +713,31 @@
     setEmotion('listen', 'Слушаю вас... Говорите команду!');
   }
 
+  
+  function sendToPythonBackend(cmdText) {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.execute_command(cmdText).then(function(res) {
+        setEmotion(res.emotion, res.reply);
+        addStreamLog(cmdText, res.reply, res.action);
+      });
+    }
+  }
+
+  function addStreamLog(cmd, reply, action) {
+    var log = document.getElementById('streamLog');
+    if (!log) return;
+    var card = document.createElement('div');
+    card.className = 'chat-bubble ' + (action === 'llm' ? 'ai' : 'cmd');
+    var time = new Date().toTimeString().split(' ')[0];
+    card.innerHTML = '<div class="bubble-time">' + time + ' • ' + action.toUpperCase() + '</div><div>' + reply + '</div>';
+    log.prepend(card);
+  }
+
   function handleEnter(e) {
     if (e.key === 'Enter') {
       const val = document.getElementById('cmdInput').value.trim();
       if (val) {
-        setEmotion('happy', `Выполняю команду: «${val}»`);
+        setEmotion('happy', `Выполняю команду: «${val}»`); sendToPythonBackend(val);
         document.getElementById('cmdInput').value = '';
       }
     }
