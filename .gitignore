@@ -1,0 +1,22 @@
+# Python virtual environment
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Audio temporary files
+*.wav
+*.mp3
+*.tmp
+
+# User caches & local logs
+*.log
+.cache/
+dist/
+build/
+*.egg-info/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store

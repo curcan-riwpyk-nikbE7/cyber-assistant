@@ -1,0 +1,37 @@
+assistant:
+  name: "Кибер"
+  wake_words:
+    - "кибер"
+    - "cyber"
+  hotkey: "alt+space"
+
+audio:
+  input_device: "default"
+  sample_rate: 16000
+  vad_threshold: 0.65
+
+stt:
+  engine: "faster-whisper"
+  model_size: "small"
+  device: "cuda"
+  compute_type: "float16"
+
+tts:
+  engine: "edge-tts"
+  voice: "ru-RU-DmitryNeural"
+  rate: "+0%"
+  volume: "+0%"
+
+brain:
+  provider: "ollama"
+  model: "qwen2.5:7b-instruct"
+  base_url: "http://localhost:11434"
+  system_prompt: >
+    Ты — Кибер, персональный голосовой ИИ-ассистент Windows для пользователя KINGSAID.
+    Ты говоришь кратко, уверенно, с легким юмором и дружелюбной иронией. Твоя коронная фраза при неожиданностях: "Ну... почти, сэр."
+    Ты умеешь мгновенно управлять компьютером: звуком, программами, медиа и окнами.
+
+ui:
+  theme: "dark-mascot"
+  window_width: 1100
+  window_height: 720
