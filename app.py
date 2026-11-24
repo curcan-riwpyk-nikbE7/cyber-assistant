@@ -1,11 +1,11 @@
 import os
 import sys
 import json
-import threading
+import time
 import subprocess
 import http.server
 import socketserver
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import urlparse
 
 from core.router import CommandRouter
 from core.updater import AppUpdater
@@ -23,11 +23,9 @@ class AppHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=UI_DIR, **kwargs)
 
     def do_POST(self):
-        # API endpoints
         parsed = urlparse(self.path)
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else ""
-        
         response_data = {}
 
         if parsed.path == "/api/execute":
@@ -72,37 +70,47 @@ class AppHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, format, *args):
-        # Отключаем спам в консоль
         pass
 
-def run_server():
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("127.0.0.1", PORT), AppHandler) as httpd:
-        httpd.serve_forever()
+def launch_chrome_or_edge():
+    app_url = f"http://127.0.0.1:{PORT}/index.html"
+    user_data = os.path.join(os.environ.get("LOCALAPPDATA", ""), "CyberAppProfile")
 
-def start_desktop_app():
-    # 1. Запуск легковесного локального веб-сервера API в отдельном потоке
-    t = threading.Thread(target=run_server, daemon=True)
-    t.start()
-
-    # 2. Запуск нативного окна Microsoft Edge в режиме App (PWA)
-    # Этот режим не блокируется политиками Smart App Control и дает 100% стабильность
-    edge_paths = [
+    # Ищем Chrome или Edge
+    browsers = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
         r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
         r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
     ]
-    edge_exe = next((p for p in edge_paths if os.path.exists(p)), "msedge.exe")
+    target_browser = next((b for b in browsers if os.path.exists(b)), None)
 
-    app_url = f"http://127.0.0.1:{PORT}/index.html"
-    cmd = [
-        edge_exe,
-        f"--app={app_url}",
-        "--window-size=1180,780",
-        "--disable-extensions",
-        "--disable-features=Translate"
-    ]
+    if target_browser:
+        cmd = [
+            target_browser,
+            f"--app={app_url}",
+            f"--user-data-dir={user_data}",
+            "--window-size=1180,780",
+            "--window-position=200,100"
+        ]
+        subprocess.Popen(cmd)
+    else:
+        import webbrowser
+        webbrowser.open(app_url)
 
-    subprocess.Popen(cmd)
+def main():
+    socketserver.TCPServer.allow_reuse_address = True
+    server = socketserver.TCPServer(("127.0.0.1", PORT), AppHandler)
+    
+    # Запускаем окно приложения через 0.5 сек после старта сокета
+    import threading
+    threading.Timer(0.5, launch_chrome_or_edge).start()
+
+    print(f"Cyber Assistant backend running on http://127.0.0.1:{PORT}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        server.server_close()
 
 if __name__ == "__main__":
-    start_desktop_app()
+    main()
