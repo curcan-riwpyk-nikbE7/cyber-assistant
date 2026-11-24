@@ -820,6 +820,9 @@
 
         <div class="settings-group">
           <h3>🎵 Звук и Мультимедиа</h3>
+          <div class="setting-sub">• «Кибер, сделай громче / тише на 20%» — регулировка громкости</div>
+          <div class="setting-sub">• «Кибер, заглуши звук / включи звук» — отключение звука (Mute)</div>
+          <div class="setting-sub">• «Кибер, громкость на максимум / на 50%» — точный уровень громкости</div>
           <div class="setting-sub">• «Кибер, пауза / плей» — переключение трека</div>
           <div class="setting-sub">• «Кибер, следующий трек» — перелистывание песни</div>
           <div class="setting-sub">• «Кибер, утренний брифинг» — утренняя сводка времени и железа</div>
@@ -907,7 +910,8 @@
           <h3>🪟 Поведение Windows</h3>
           <div class="setting-row">
             <span class="setting-label">Хоткей принудительного вызова:</span>
-            <input type="text" class="setting-control" value="Alt + Space" />
+            <input type="text" class="setting-control" value="Alt + Space" readonly />
+            <span class="setting-sub">Нажмите Alt + Space в любой игре или приложении для мгновенного вызова</span>
           </div>
           <div class="setting-row">
             <span class="setting-label">Автозагрузка при старте ПК:</span>
@@ -916,6 +920,16 @@
               <option>Выключено</option>
             </select>
           </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>📱 Telegram Companion (Astra Connect)</h3>
+          <div class="setting-row">
+            <span class="setting-label">Telegram Bot Token:</span>
+            <input type="password" class="setting-control" id="tgTokenInput" placeholder="123456789:ABCdefGhI..." />
+            <span class="setting-sub">Создайте бота у @BotFather и вставьте токен для удаленного управления ПК</span>
+          </div>
+          <button class="btn-run-scenario" style="margin-top: 6px;" onclick="saveAndStartTelegramBot()">Подключить Telegram бота</button>
         </div>
       </div>
     </div>
@@ -1303,6 +1317,28 @@
       if (res.success) {
         updateLlmUI(res.provider, res.model);
         addStreamLog('Провайдер интеллекта переключен', `Активна модель: ${res.provider.toUpperCase()} [${res.model}]`, 'SYSTEM');
+      }
+    });
+  }
+
+  function saveAndStartTelegramBot() {
+    var token = document.getElementById('tgTokenInput').value.trim();
+    if (!token) {
+      alert('Пожалуйста, введите токен бота от @BotFather.');
+      return;
+    }
+    fetch('/api/start_telegram', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ token: token })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        alert('Telegram бот запущен! Отправьте ему /start в Telegram.');
+        addStreamLog('Telegram Bot', 'Модуль Astra Connect активирован.', 'SYSTEM');
+      } else {
+        alert('Ошибка запуска бота: ' + res.error);
       }
     });
   }

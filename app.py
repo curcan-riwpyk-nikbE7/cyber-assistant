@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import subprocess
+import threading
 import http.server
 import socketserver
 from urllib.parse import urlparse
@@ -11,6 +12,10 @@ from core.router import CommandRouter
 from core.updater import AppUpdater
 from core.plugins import PluginManager
 from core.llm_engine import LLMEngine
+from core.speaker import speaker
+from core.hotkey import HotkeyManager
+from core.listener import VoiceListener
+from core.telegram_companion import TelegramCompanion
 from tools.telemetry import get_system_telemetry
 
 PORT = 54321
@@ -19,6 +24,11 @@ llm_engine = LLMEngine(provider="ollama", model="qwen2.5:3b")
 router = CommandRouter(llm_engine=llm_engine)
 updater = AppUpdater(os.path.dirname(__file__))
 plugin_manager = PluginManager()
+
+# Фоновые сервисы
+hotkey_manager = HotkeyManager(hotkey="alt+space")
+voice_listener = VoiceListener(router=router, trigger_word="кибер")
+telegram_companion = TelegramCompanion(router=router)
 
 class AppHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -34,7 +44,7 @@ class AppHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 body = json.loads(post_data)
                 cmd = body.get("command", "")
-                response_data = router.route_command(cmd)
+                response_data = router.route_command(cmd, speak=True)
             except Exception as e:
                 response_data = {"reply": f"Ошибка: {e}", "emotion": "guilty", "action": "error"}
 
@@ -80,6 +90,23 @@ class AppHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 response_data = {"success": False, "error": str(e)}
 
+        elif parsed.path == "/api/toggle_speech":
+            try:
+                body = json.loads(post_data)
+                speaker.enabled = body.get("enabled", True)
+                response_data = {"success": True, "enabled": speaker.enabled}
+            except Exception as e:
+                response_data = {"success": False, "error": str(e)}
+
+        elif parsed.path == "/api/start_telegram":
+            try:
+                body = json.loads(post_data)
+                token = body.get("token", "")
+                telegram_companion.start(token)
+                response_data = {"success": True}
+            except Exception as e:
+                response_data = {"success": False, "error": str(e)}
+
         self.send_response(200)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -100,7 +127,6 @@ def launch_chrome_or_edge():
     app_url = f"http://127.0.0.1:{PORT}/index.html"
     user_data = os.path.join(os.environ.get("LOCALAPPDATA", ""), "CyberAppProfile")
 
-    # Ищем Chrome или Edge
     browsers = [
         r"C:\Program Files\Google\Chrome\Application\chrome.exe",
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
@@ -126,11 +152,22 @@ def main():
     socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.TCPServer(("127.0.0.1", PORT), AppHandler)
     
-    # Запускаем окно приложения через 0.5 сек после старта сокета
-    import threading
+    # 1. Запуск окна приложения
     threading.Timer(0.5, launch_chrome_or_edge).start()
 
-    print(f"Cyber Assistant backend running on http://127.0.0.1:{PORT}")
+    # 2. Запуск глобального хоткея Alt + Space
+    try:
+        hotkey_manager.start()
+    except Exception as e:
+        print(f"Ошибка хоткея: {e}")
+
+    # 3. Запуск фонового голосового слушателя
+    try:
+        voice_listener.start()
+    except Exception as e:
+        print(f"Ошибка слушателя микрофона: {e}")
+
+    print(f"Cyber Assistant ecosystem active on http://127.0.0.1:{PORT}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
