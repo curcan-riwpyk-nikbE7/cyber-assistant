@@ -1,76 +1,110 @@
 import os
 import sys
-import webview
-import threading
+import json
+from PyQt6.QtCore import QUrl, pyqtSlot, QObject, Qt, QPoint
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWebChannel import QWebChannel
+
 from core.router import CommandRouter
 from core.updater import AppUpdater
 from tools.telemetry import get_system_telemetry
 
-class DesktopBridge:
-    """Двусторонний API-мост между JavaScript интерфейсом и Python бэкендом."""
-    def __init__(self, window_ref=None, repo_dir=None):
+class WebBridge(QObject):
+    """Мост связи между JavaScript в интерфейсе и Python."""
+    def __init__(self, main_window):
+        super().__init__()
+        self.win = main_window
         self.router = CommandRouter()
-        self.window = window_ref
-        self.repo_dir = repo_dir or os.path.dirname(__file__)
-        self.updater = AppUpdater(self.repo_dir)
+        self.updater = AppUpdater(os.path.dirname(__file__))
 
-    def set_window(self, window):
-        self.window = window
+    @pyqtSlot(str, result=str)
+    def executeCommand(self, cmd_text):
+        res = self.router.route_command(cmd_text)
+        return json.dumps(res)
 
-    def execute_command(self, text: str) -> dict:
-        """Принимает команду из интерфейса и запускает выполнение в Windows."""
-        return self.router.route_command(text)
+    @pyqtSlot(result=str)
+    def getTelemetry(self):
+        return json.dumps(get_system_telemetry())
 
-    def get_telemetry(self) -> dict:
-        """Отдает актуальную сводку процессора, видеокарты и диска."""
-        return get_system_telemetry()
+    @pyqtSlot(result=str)
+    def checkUpdates(self):
+        return json.dumps(self.updater.check_for_updates())
 
-    def check_updates(self) -> dict:
-        """Проверяет обновления через GitHub репозиторий."""
-        return self.updater.check_for_updates()
+    @pyqtSlot(result=str)
+    def performUpdate(self):
+        return json.dumps(self.updater.apply_update())
 
-    def perform_update(self) -> dict:
-        """Скачивает и накатывает обновления из GitHub."""
-        return self.updater.apply_update()
+    @pyqtSlot()
+    def minimizeWindow(self):
+        self.win.showMinimized()
 
-    # Оконные системные кнопки (Кастомный Frameless заголовок окна)
-    def window_minimize(self):
-        if self.window:
-            self.window.minimize()
+    @pyqtSlot()
+    def toggleMaximizeWindow(self):
+        if self.win.isMaximized():
+            self.win.showNormal()
+        else:
+            self.win.showMaximized()
 
-    def window_toggle_maximize(self):
-        if self.window:
-            # webview maximize/restore
-            pass
+    @pyqtSlot()
+    def closeWindow(self):
+        self.win.close()
 
-    def window_close(self):
-        if self.window:
-            self.window.destroy()
 
-def start_desktop_app():
-    ui_path = os.path.join(os.path.dirname(__file__), "ui", "index.html")
-    if not os.path.exists(ui_path):
-        print(f"Error: UI file not found at {ui_path}")
-        return
+class CyberMainWindow(QMainWindow):
+    """Главное нативное окно приложения Кибер на движке Qt6 WebEngine."""
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Cyber Assistant // KINGSAID OS")
+        self.resize(1160, 760)
+        self.setMinimumSize(960, 640)
 
-    bridge = DesktopBridge()
+        # Делаем окно безрамочным (Frameless) как в Discord / Astra
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
 
-    # Создаем нативное окно с кастомным безрамочным стилем (frameless=True)
-    window = webview.create_window(
-        title="CYBER Assistant // KINGSAID EDITION",
-        url=f"file:///{ui_path}",
-        width=1160,
-        height=760,
-        frameless=True,
-        easy_drag=True,
-        resizable=True,
-        min_size=(960, 640),
-        js_api=bridge,
-        background_color="#06080d"
-    )
-    bridge.set_window(window)
+        # Веб-движок Chromium
+        self.browser = QWebEngineView()
+        self.browser.page().setBackgroundColor(Qt.GlobalColor.transparent)
 
-    webview.start(debug=False)
+        # Канал связи
+        self.channel = QWebChannel()
+        self.bridge = WebBridge(self)
+        self.channel.registerObject("pyBridge", self.bridge)
+        self.browser.page().setWebChannel(self.channel)
+
+        # Загрузка локального UI
+        ui_path = os.path.join(os.path.dirname(__file__), "ui", "index.html")
+        self.browser.load(QUrl.fromLocalFile(os.path.abspath(ui_path)))
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.browser)
+
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        # Поддержка плавного перетаскивания окна мышь
+        self.drag_position = QPoint()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and event.pos().y() < 50:
+            self.drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.MouseButton.LeftButton and event.pos().y() < 50:
+            self.move(event.globalPosition().toPoint() - self.drag_position)
+            event.accept()
+
+
+def run_app():
+    # Отключаем лишнее черное окно консоли
+    app = QApplication(sys.argv)
+    window = CyberMainWindow()
+    window.show()
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
-    start_desktop_app()
+    run_app()

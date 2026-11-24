@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<script src="qwebchannel.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CYBER Assistant // KINGSAID OS</title>
@@ -627,54 +628,65 @@
   }
 
   // --- WINDOW CONTROLS & UPDATER ---
-  function windowMinimize() {
-    if (window.pywebview && window.pywebview.api) window.pywebview.api.window_minimize();
-  }
-  function windowToggleMax() {
-    if (window.pywebview && window.pywebview.api) window.pywebview.api.window_toggle_maximize();
-  }
-  function windowClose() {
-    if (window.pywebview && window.pywebview.api) window.pywebview.api.window_close();
+  
+  var pyBridge = null;
+  if (typeof QWebChannel !== 'undefined') {
+    new QWebChannel(qt.webChannelTransport, function (channel) {
+      pyBridge = channel.objects.pyBridge;
+    });
   }
 
-  function checkAppUpdates() {
-    const btn = document.getElementById('btnUpdateCheck');
-    const txt = document.getElementById('updateBtnText');
-    txt.innerText = 'Проверка...';
-
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.check_updates().then(function(res) {
-        if (res.has_update) {
-          btn.classList.add('has-update');
-          txt.innerText = 'Обновление доступно!';
-          document.getElementById('updateDesc').innerText = `Коммит ${res.latest_commit}: ${res.message}`;
-          document.getElementById('updateModal').style.display = 'flex';
-        } else {
-          txt.innerText = 'Актуальная версия';
-          setTimeout(() => { txt.innerText = 'Проверить обновления'; }, 2500);
-        }
+  function sendToPythonBackend(cmdText) {
+    if (pyBridge) {
+      pyBridge.executeCommand(cmdText, function(response) {
+        var res = JSON.parse(response);
+        setEmotion(res.emotion, res.reply);
+        addStreamLog(cmdText, res.reply, res.action);
       });
-    } else {
-      setTimeout(() => {
-        txt.innerText = 'Актуальная версия (Git OK)';
-        setTimeout(() => { txt.innerText = 'Проверить обновления'; }, 2000);
-      }, 700);
     }
   }
 
-  function closeUpdateModal() {
-    document.getElementById('updateModal').style.display = 'none';
+  function windowMinimize() { if (pyBridge) pyBridge.minimizeWindow(); }
+  function windowToggleMax() { if (pyBridge) pyBridge.toggleMaximizeWindow(); }
+  function windowClose() { if (pyBridge) pyBridge.closeWindow(); }
+
+  function checkAppUpdates() {
+    var btn = document.getElementById('btnUpdateCheck');
+    var txt = document.getElementById('updateBtnText');
+    txt.innerText = 'Проверка...';
+    if (pyBridge) {
+      pyBridge.checkUpdates(function(response) {
+        var res = JSON.parse(response);
+        if (res.has_update) {
+          btn.classList.add('has-update');
+          txt.innerText = 'Обновление доступно!';
+          document.getElementById('updateDesc').innerText = 'Коммит ' + res.latest_commit + ': ' + res.message;
+          document.getElementById('updateModal').style.display = 'flex';
+        } else {
+          txt.innerText = 'Актуальная версия';
+          setTimeout(function() { txt.innerText = 'Проверить обновления'; }, 2500);
+        }
+      });
+    }
   }
 
   function applyUpdateNow() {
-    const txt = document.getElementById('updateBtnText');
+    var txt = document.getElementById('updateBtnText');
     txt.innerText = 'Обновляюсь...';
     closeUpdateModal();
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.perform_update().then(function(res) {
+    if (pyBridge) {
+      pyBridge.performUpdate(function(response) {
+        var res = JSON.parse(response);
         if (res.success) {
-          alert('Приложение успешно обновлено из GitHub! Перезапустите приложение для применения.');
+          alert('Приложение успешно обновлено из GitHub! Перезапустите приложение.');
         } else {
+          alert('Ошибка обновления: ' + res.error);
+        }
+        txt.innerText = 'Проверить обновления';
+      });
+    }
+  }
+ else {
           alert('Ошибка обновления: ' + res.error);
         }
         txt.innerText = 'Проверить обновления';
