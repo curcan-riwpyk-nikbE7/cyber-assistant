@@ -8,6 +8,7 @@ from PyQt6.QtWebChannel import QWebChannel
 
 from core.router import CommandRouter
 from core.updater import AppUpdater
+from core.plugins import PluginManager
 from tools.telemetry import get_system_telemetry
 
 class WebBridge(QObject):
@@ -17,6 +18,7 @@ class WebBridge(QObject):
         self.win = main_window
         self.router = CommandRouter()
         self.updater = AppUpdater(os.path.dirname(__file__))
+        self.plugin_manager = PluginManager()
 
     @pyqtSlot(str, result=str)
     def executeCommand(self, cmd_text):
@@ -34,6 +36,15 @@ class WebBridge(QObject):
     @pyqtSlot(result=str)
     def performUpdate(self):
         return json.dumps(self.updater.apply_update())
+
+    @pyqtSlot(result=str)
+    def getPlugins(self):
+        return json.dumps(self.plugin_manager.get_plugins_list())
+
+    @pyqtSlot(str, result=str)
+    def togglePlugin(self, plugin_id):
+        res = self.plugin_manager.toggle_plugin(plugin_id)
+        return json.dumps(res)
 
     @pyqtSlot()
     def minimizeWindow(self):
@@ -56,10 +67,10 @@ class CyberMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Cyber Assistant // KINGSAID OS")
-        self.resize(1160, 760)
+        self.resize(1180, 780)
         self.setMinimumSize(960, 640)
 
-        # Делаем окно безрамочным (Frameless) как в Discord / Astra
+        # Безрамочное стильное окно
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
 
@@ -85,7 +96,6 @@ class CyberMainWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        # Поддержка плавного перетаскивания окна мышь
         self.drag_position = QPoint()
 
     def mousePressEvent(self, event):
@@ -100,7 +110,6 @@ class CyberMainWindow(QMainWindow):
 
 
 def run_app():
-    # Отключаем лишнее черное окно консоли
     app = QApplication(sys.argv)
     window = CyberMainWindow()
     window.show()

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<script src="qwebchannel.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CYBER Assistant // KINGSAID OS</title>
+<script src="qwebchannel.js"></script>
 <style>
   :root {
     --bg-main: #06080d;
@@ -34,9 +34,9 @@
     border-radius: 12px;
   }
 
-  /* 1. NATIVE APPLICATION TITLEBAR (Перетаскивание + Кнопки окна Windows + Обновление) */
+  /* 1. NATIVE APPLICATION TITLEBAR */
   .app-titlebar {
-    height: 42px;
+    height: 44px;
     background: rgba(10, 13, 19, 0.95);
     border-bottom: 1px solid var(--card-border);
     display: flex;
@@ -44,29 +44,29 @@
     justify-content: space-between;
     padding: 0 16px;
     z-index: 50;
-    -webkit-app-region: drag; /* Drag window in webview */
+    -webkit-app-region: drag;
   }
 
   .titlebar-left {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.5px;
   }
   .app-icon {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 6px;
     background: var(--lime-core);
-    box-shadow: 0 0 10px var(--lime-core);
+    box-shadow: 0 0 12px var(--lime-core);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #000;
     font-weight: 900;
-    font-size: 11px;
+    font-size: 12px;
   }
   .app-version {
     font-size: 10px;
@@ -76,7 +76,6 @@
     color: rgba(255, 255, 255, 0.6);
   }
 
-  /* Titlebar Action Buttons (Update + Window controls) */
   .titlebar-actions {
     display: flex;
     align-items: center;
@@ -84,7 +83,6 @@
     -webkit-app-region: no-drag;
   }
 
-  /* Update Checker Button */
   .btn-update {
     background: rgba(6, 182, 212, 0.15);
     border: 1px solid rgba(6, 182, 212, 0.35);
@@ -102,16 +100,13 @@
   .btn-update:hover {
     background: var(--accent-cyan);
     color: #000;
-    box-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
   }
   .btn-update.has-update {
     background: rgba(249, 115, 22, 0.2);
     border-color: var(--accent-orange);
     color: var(--accent-orange);
-    animation: pulseUpdate 2s infinite ease-in-out;
   }
 
-  /* Native Windows Window Controls (Minimize, Maximize, Close) */
   .win-controls {
     display: flex;
     align-items: center;
@@ -126,7 +121,6 @@
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
     border-radius: 4px;
-    transition: background 0.15s, color 0.15s;
     font-size: 12px;
   }
   .win-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
@@ -153,7 +147,7 @@
     gap: 4px;
   }
   .pill-tab {
-    padding: 5px 14px;
+    padding: 6px 16px;
     border-radius: 7px;
     font-size: 12px;
     font-weight: 500;
@@ -177,15 +171,29 @@
   }
   .strip-status strong { color: #fff; }
 
-  /* 3. MAIN WORKSPACE (3 Columns) */
-  .workspace-grid {
+  /* 3. WORKSPACE CONTAINER (Tab Switcher) */
+  .view-wrapper {
     flex: 1;
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 74px; /* Отступ под нижнюю капсулу */
+  }
+  .tab-view {
+    position: absolute;
+    inset: 0;
+    padding: 20px 24px 80px 24px;
+    display: none;
+    overflow-y: auto;
+  }
+  .tab-view.active { display: flex; }
+
+  /* TAB 1: ГЛАВНЫЙ ЭКРАН (3 Колонки) */
+  .workspace-grid {
     display: grid;
     grid-template-columns: 310px 1fr 330px;
-    padding: 20px 24px;
     gap: 20px;
-    z-index: 10;
-    overflow: hidden;
+    width: 100%;
+    height: 100%;
   }
 
   .glass-card {
@@ -227,8 +235,7 @@
     width: 40px; height: 40px; border-radius: 8px;
     background: linear-gradient(135deg, #f97316, #ef4444);
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+    font-size: 16px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
   }
   .media-meta h4 { font-size: 12px; font-weight: 600; }
   .media-meta p { font-size: 10px; color: rgba(255,255,255,0.5); }
@@ -248,13 +255,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    padding: 16px;
     text-align: center;
   }
   .mascot-head {
     position: relative;
-    width: 175px;
-    height: 175px;
+    width: 170px;
+    height: 170px;
     border-radius: 50%;
     background: radial-gradient(circle at 40% 35%, 
       #d9f99d 0%, 
@@ -275,28 +282,28 @@
   }
   .mascot-head:hover { transform: scale(1.06); }
 
-  .eyebrows { position: absolute; top: 30px; display: flex; gap: 34px; }
+  .eyebrows { position: absolute; top: 28px; display: flex; gap: 34px; }
   .brow { width: 20px; height: 4px; background: rgba(255, 255, 255, 0.7); border-radius: 4px; transform: rotate(12deg); transition: transform 0.3s; }
   .brow.r { transform: rotate(-12deg); }
 
-  .eyes { position: absolute; top: 44px; display: flex; gap: 18px; }
+  .eyes { position: absolute; top: 42px; display: flex; gap: 18px; }
   .eye { width: 40px; height: 56px; background: #fff; border-radius: 50%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .pupil { width: 28px; height: 38px; background: #142207; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; transition: transform 0.05s ease-out; }
   .glare-1 { position: absolute; top: 5px; left: 5px; width: 11px; height: 11px; background: #fff; border-radius: 50%; }
   .glare-2 { position: absolute; bottom: 6px; right: 6px; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
   .eyelid { position: absolute; inset: 0; background: #84cc16; border-radius: 50%; transform: translateY(-100%); transition: transform 0.12s; }
-  .mouth { position: absolute; bottom: 34px; width: 13px; height: 7px; background: #1a3307; border-radius: 0 0 14px 14px; transition: all 0.2s; }
+  .mouth { position: absolute; bottom: 32px; width: 13px; height: 7px; background: #1a3307; border-radius: 0 0 14px 14px; transition: all 0.2s; }
 
-  .subtitle-container { margin-top: 12px; }
+  .subtitle-container { margin-top: 10px; }
   .subtitle-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 4px; }
-  .subtitle-body { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; color: #fff; min-height: 32px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+  .subtitle-body { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; color: #fff; min-height: 28px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
-  .macro-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .macro-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
   .chip {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--card-border);
-    padding: 6px 12px;
-    border-radius: 10px;
+    padding: 5px 10px;
+    border-radius: 8px;
     font-size: 11px;
     cursor: pointer;
     color: rgba(255,255,255,0.7);
@@ -311,13 +318,93 @@
   .chat-bubble.cmd { border-left: 3px solid var(--accent-cyan); }
   .bubble-time { font-size: 9px; color: rgba(255,255,255,0.35); font-family: var(--font-mono); margin-bottom: 4px; }
 
-  /* 4. BOTTOM INPUT CAPSULE */
-  .bottom-station { height: 64px; padding: 0 24px 14px 24px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  /* TAB 2: ПЛАГИНЫ (Каталог расширений в стиле Astra Store) */
+  .plugin-catalog {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+  .plugin-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .plugin-head { display: flex; align-items: center; gap: 12px; }
+  .plugin-icon-box {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--card-border);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .plugin-info h3 { font-size: 14px; font-weight: 600; color: #fff; }
+  .plugin-info p { font-size: 11px; color: rgba(255,255,255,0.45); }
+  .plugin-desc { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; flex: 1; }
+  .plugin-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+  .btn-toggle-plugin {
+    background: rgba(132, 204, 22, 0.2);
+    border: 1px solid var(--lime-core);
+    color: var(--lime-core);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-toggle-plugin.off {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* TAB 3: НАСТРОЙКИ (Astra Style Settings) */
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+  .settings-group {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .settings-group h3 { font-size: 13px; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1px; }
+  .setting-row { display: flex; flex-direction: column; gap: 6px; }
+  .setting-label { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
+  .setting-sub { font-size: 10px; color: rgba(255,255,255,0.4); }
+  .setting-control {
+    width: 100%; background: rgba(10, 13, 19, 0.8); border: 1px solid var(--card-border);
+    border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 12px; outline: none;
+  }
+
+  /* 4. BOTTOM INPUT CAPSULE (Всегда поверх внизу) */
+  .bottom-station {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    padding: 0 24px 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+    pointer-events: none;
+  }
   .capsule-bar {
-    width: 600px; height: 48px; background: rgba(15, 19, 28, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px;
+    width: 620px; height: 48px; background: rgba(15, 19, 28, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 24px;
     backdrop-filter: blur(30px); display: flex; align-items: center;
-    padding: 0 8px 0 16px; gap: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    padding: 0 8px 0 16px; gap: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    pointer-events: auto;
   }
   .capsule-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 13px; font-family: inherit; }
   .mic-action-btn {
@@ -327,9 +414,9 @@
     cursor: pointer; box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
   }
 
-  /* Modal Update Notification */
+  /* Update Modal */
   .update-modal {
-    display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.7);
+    display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.75);
     backdrop-filter: blur(10px); z-index: 100; align-items: center; justify-content: center;
   }
   .update-box {
@@ -337,19 +424,18 @@
     border-radius: 16px; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
     display: flex; flex-direction: column; gap: 14px;
   }
-  .update-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .update-title { font-size: 15px; font-weight: 700; color: #fff; }
   .update-desc { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5; }
   .update-btn-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
   .btn-modal-cancel { background: rgba(255,255,255,0.08); border: none; color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; }
   .btn-modal-apply { background: var(--accent-cyan); border: none; color: #000; font-weight: 600; padding: 6px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; }
 
   @keyframes floatBreathe { 0% { transform: translateY(0px) scale(0.99); } 100% { transform: translateY(-6px) scale(1.02); } }
-  @keyframes pulseUpdate { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; box-shadow: 0 0 14px rgba(249, 115, 22, 0.6); } }
 </style>
 </head>
 <body>
 
-<!-- 1. NATIVE APPLICATION TITLEBAR -->
+<!-- 1. NATIVE TITLEBAR -->
 <div class="app-titlebar">
   <div class="titlebar-left">
     <div class="app-icon">К</div>
@@ -358,13 +444,11 @@
   </div>
 
   <div class="titlebar-actions">
-    <!-- Кнопка обновления приложения -->
     <button class="btn-update" id="btnUpdateCheck" onclick="checkAppUpdates()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
       <span id="updateBtnText">Проверить обновления</span>
     </button>
 
-    <!-- Системные кнопки окна Windows -->
     <div class="win-controls">
       <div class="win-btn" title="Свернуть" onclick="windowMinimize()">─</div>
       <div class="win-btn" title="Развернуть" onclick="windowToggleMax()">◻</div>
@@ -373,13 +457,13 @@
   </div>
 </div>
 
-<!-- 2. SUB-BAR TABS -->
+<!-- 2. SUB-BAR TABS (Главная, Плагины, Команды, Настройки) -->
 <div class="nav-strip">
   <div class="nav-pills">
-    <div class="pill-tab active">Главная</div>
-    <div class="pill-tab" onclick="quickSend('покажи команды')">Команды</div>
-    <div class="pill-tab" onclick="quickSend('статус железа')">Мониторинг</div>
-    <div class="pill-tab" onclick="quickSend('настройки')">Настройки</div>
+    <div class="pill-tab active" onclick="switchMainTab('tabHome', this)">Главная</div>
+    <div class="pill-tab" onclick="switchMainTab('tabPlugins', this)">🧩 Плагины</div>
+    <div class="pill-tab" onclick="switchMainTab('tabCommands', this)">>_ Команды</div>
+    <div class="pill-tab" onclick="switchMainTab('tabSettings', this)">⚙️ Настройки</div>
   </div>
 
   <div class="strip-status">
@@ -389,110 +473,250 @@
   </div>
 </div>
 
-<!-- 3. MAIN WORKSPACE -->
-<div class="workspace-grid">
+<!-- 3. WORKSPACE VIEWS -->
+<div class="view-wrapper">
 
-  <!-- LEFT: Media & Hardware -->
-  <div class="glass-card">
-    <div>
-      <div class="card-title">
-        <span>МУЛЬТИМЕДИА</span>
-        <span style="color: var(--lime-core);">ACTIVE</span>
-      </div>
+  <!-- VIEW 1: ГЛАВНЫЙ ЭКРАН -->
+  <div class="tab-view active" id="tabHome">
+    <div class="workspace-grid">
 
-      <div class="media-deck">
-        <div class="media-top">
-          <div class="media-cover">🎵</div>
-          <div class="media-meta">
-            <h4>Пора возвращаться...</h4>
-            <p>БИ-2 • Spotify / Chrome</p>
+      <!-- LEFT: Media & Hardware -->
+      <div class="glass-card">
+        <div>
+          <div class="card-title">
+            <span>МУЛЬТИМЕДИА</span>
+            <span style="color: var(--lime-core);">ACTIVE</span>
+          </div>
+
+          <div class="media-deck">
+            <div class="media-top">
+              <div class="media-cover">🎵</div>
+              <div class="media-meta">
+                <h4>Пора возвращаться...</h4>
+                <p>БИ-2 • Spotify / Chrome</p>
+              </div>
+            </div>
+            <div class="media-bar"><div class="media-fill"></div></div>
           </div>
         </div>
-        <div class="media-bar"><div class="media-fill"></div></div>
+
+        <div>
+          <div class="card-title" style="margin-top: 14px;">
+            <span>СИСТЕМНЫЙ МОНИТОРИНГ</span>
+            <span style="font-family: var(--font-mono); font-size: 10px;">RYZEN 5600X</span>
+          </div>
+
+          <div class="stat-group">
+            <div class="stat-item">
+              <div class="stat-meta"><span>ЦП</span><strong id="cpuVal">24%</strong></div>
+              <div class="stat-track"><div class="stat-bar" id="cpuBar" style="width: 24%; background: var(--accent-cyan);"></div></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-meta"><span>ГПУ (RTX 5060)</span><strong id="gpuVal">18%</strong></div>
+              <div class="stat-track"><div class="stat-bar" id="gpuBar" style="width: 18%; background: var(--lime-core);"></div></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-meta"><span>ОЗУ</span><strong>12.4 / 32 GB</strong></div>
+              <div class="stat-track"><div class="stat-bar" style="width: 38%; background: var(--accent-purple);"></div></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-meta"><span>Диск C:</span><strong>91.9 GB свободно</strong></div>
+              <div class="stat-track"><div class="stat-bar" style="width: 53%; background: var(--accent-orange);"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: Mascot -->
+      <div class="glass-card center-stage">
+        <div class="mascot-head" id="head" onclick="triggerMascotClick()">
+          <div class="eyebrows">
+            <div class="brow" id="bL"></div>
+            <div class="brow r" id="bR"></div>
+          </div>
+
+          <div class="eyes">
+            <div class="eye">
+              <div class="pupil" id="pL"><div class="glare-1"></div><div class="glare-2"></div></div>
+              <div class="eyelid" id="eL"></div>
+            </div>
+            <div class="eye">
+              <div class="pupil" id="pR"><div class="glare-1"></div><div class="glare-2"></div></div>
+              <div class="eyelid" id="eR"></div>
+            </div>
+          </div>
+
+          <div class="mouth" id="m"></div>
+        </div>
+
+        <div class="subtitle-container">
+          <div class="subtitle-label">КИБЕР // ГОЛОСОВОЙ ОТКЛИК</div>
+          <div class="subtitle-body" id="subText">Ну... почти, сэр.</div>
+        </div>
+
+        <div class="macro-chips">
+          <div class="chip" onclick="quickSend('сверни всё')">🗕 Свернуть всё</div>
+          <div class="chip" onclick="quickSend('открой браузер')">🌐 Браузер</div>
+          <div class="chip" onclick="quickSend('найди на ютубе музыку')">▶ YouTube</div>
+          <div class="chip" onclick="quickSend('запусти steam')">🎮 Steam</div>
+          <div class="chip" onclick="quickSend('пауза')">⏯ Пауза</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Log -->
+      <div class="glass-card">
+        <div class="card-title">
+          <span>ЖУРНАЛ СОБЫТИЙ</span>
+          <span style="color: var(--lime-core);">REALTIME</span>
+        </div>
+
+        <div class="chat-stream-box" id="streamLog">
+          <div class="chat-bubble ai">
+            <div class="bubble-time">SYSTEM BOOT</div>
+            <div>Cyber Assistant Qt6 Runtime активен. Плагины загружены.</div>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 10px;">
+          Хоткей вызова: <strong>Alt + Space</strong>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VIEW 2: ПЛАГИНЫ (Astra Plugin Store) -->
+  <div class="tab-view" id="tabPlugins">
+    <div style="width: 100%;">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 16px; font-weight: 700;">🧩 Каталог плагинов и модулей расширения</h2>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Модульная система возможностей ассистента в стиле Astra Plugins SDK</p>
+      </div>
+      <div class="plugin-catalog" id="pluginCatalog">
+        <!-- Генерируется из Python PluginManager -->
       </div>
     </div>
+  </div>
 
-    <div>
-      <div class="card-title" style="margin-top: 16px;">
-        <span>СИСТЕМНЫЙ МОНИТОРИНГ</span>
-        <span style="font-family: var(--font-mono); font-size: 10px;">RYZEN 5600X</span>
+  <!-- VIEW 3: КОМАНДЫ -->
+  <div class="tab-view" id="tabCommands">
+    <div style="width: 100%;">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 16px; font-weight: 700;">>_ Справочник голосовых команд</h2>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Команды, которые Кибер выполняет напрямую без задержек</p>
       </div>
+      <div class="settings-grid">
+        <div class="settings-group">
+          <h3>🗔 Управление окнами</h3>
+          <div class="setting-sub">• «Кибер, сверни всё» — открывает рабочий стол (Win+D)</div>
+          <div class="setting-sub">• «Кибер, сверни это окно» — минимизирует активную программу</div>
+          <div class="setting-sub">• «Кибер, разверни на весь экран» — разворачивает окно</div>
+          <div class="setting-sub">• «Кибер, закрой программу» — безопасное закрытие (Alt+F4/WM_CLOSE)</div>
+        </div>
 
-      <div class="stat-group">
-        <div class="stat-item">
-          <div class="stat-meta"><span>ЦП</span><strong id="cpuVal">24%</strong></div>
-          <div class="stat-track"><div class="stat-bar" id="cpuBar" style="width: 24%; background: var(--accent-cyan);"></div></div>
+        <div class="settings-group">
+          <h3>🌐 Интернет и Браузер</h3>
+          <div class="setting-sub">• «Кибер, найди в интернете [запрос]» — быстрый поиск Google/Яндекс</div>
+          <div class="setting-sub">• «Кибер, найди на ютубе [видео]» — мгновенный поиск на YouTube</div>
+          <div class="setting-sub">• «Кибер, открой ютуб» — запуск главной страницы YouTube</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-meta"><span>ГПУ (RTX 5060)</span><strong id="gpuVal">18%</strong></div>
-          <div class="stat-track"><div class="stat-bar" id="gpuBar" style="width: 18%; background: var(--lime-core);"></div></div>
+
+        <div class="settings-group">
+          <h3>🎮 Программы и Игры</h3>
+          <div class="setting-sub">• «Кибер, запусти Steam» — запуск Steam клиента</div>
+          <div class="setting-sub">• «Кибер, открой Discord» — запуск Discord</div>
+          <div class="setting-sub">• «Кибер, открой Telegram» — запуск Telegram Desktop</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-meta"><span>ОЗУ</span><strong>12.4 / 32 GB</strong></div>
-          <div class="stat-track"><div class="stat-bar" style="width: 38%; background: var(--accent-purple);"></div></div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-meta"><span>Диск C:</span><strong>91.9 GB свободно</strong></div>
-          <div class="stat-track"><div class="stat-bar" style="width: 53%; background: var(--accent-orange);"></div></div>
+
+        <div class="settings-group">
+          <h3>🎵 Звук и Мультимедиа</h3>
+          <div class="setting-sub">• «Кибер, пауза / плей» — переключение трека</div>
+          <div class="setting-sub">• «Кибер, следующий трек» — перелистывание песни</div>
+          <div class="setting-sub">• «Кибер, статус системы» — сводка температуры и нагрузки ПК</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CENTER: Living Mascot -->
-  <div class="glass-card center-stage">
-    <div class="mascot-head" id="head" onclick="triggerMascotClick()">
-      <div class="eyebrows">
-        <div class="brow" id="bL"></div>
-        <div class="brow r" id="bR"></div>
+  <!-- VIEW 4: НАСТРОЙКИ -->
+  <div class="tab-view" id="tabSettings">
+    <div style="width: 100%;">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 16px; font-weight: 700;">⚙️ Системная конфигурация ассистента</h2>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Тонкая настройка оборудования, моделей интеллекта и синтеза речи</p>
       </div>
 
-      <div class="eyes">
-        <div class="eye">
-          <div class="pupil" id="pL"><div class="glare-1"></div><div class="glare-2"></div></div>
-          <div class="eyelid" id="eL"></div>
+      <div class="settings-grid">
+        <div class="settings-group">
+          <h3>🎙️ Аудио и Микрофон</h3>
+          <div class="setting-row">
+            <span class="setting-label">Устройство захвата речи:</span>
+            <select class="setting-control">
+              <option selected>Аудио устройства USB (Гарнитура)</option>
+              <option>Realtek High Definition Audio</option>
+              <option>NVIDIA Broadcast</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Модель распознавания (STT):</span>
+            <select class="setting-control">
+              <option selected>faster-whisper: small (CUDA RTX 5060 • 160ms)</option>
+              <option>faster-whisper: base (Ультрабыстрый • 80ms)</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Имя активации (Wake-Word):</span>
+            <input type="text" class="setting-control" value="Кибер" />
+          </div>
         </div>
-        <div class="eye">
-          <div class="pupil" id="pR"><div class="glare-1"></div><div class="glare-2"></div></div>
-          <div class="eyelid" id="eR"></div>
+
+        <div class="settings-group">
+          <h3>🔊 Голос и Озвучка (TTS)</h3>
+          <div class="setting-row">
+            <span class="setting-label">Голосовой движок:</span>
+            <select class="setting-control">
+              <option selected>Edge-TTS: DmitryNeural (Мужской, глубокий тембр)</option>
+              <option>Edge-TTS: SvetlanaNeural (Женский, стиль Astra)</option>
+              <option>Silero TTS (100% офлайн на CPU)</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Коронная фраза с юмором:</span>
+            <input type="text" class="setting-control" value="Ну... почти, сэр." />
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>🧠 Интеллект (LLM Provider)</h3>
+          <div class="setting-row">
+            <span class="setting-label">Модель рассуждений:</span>
+            <select class="setting-control">
+              <option selected>Ollama: qwen2.5:7b-instruct (Локально на ПК)</option>
+              <option>Ollama: llama3.1:8b (Локально)</option>
+              <option>Google Gemini 2.5 Flash API (Облачный мгновенный)</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Системная роль:</span>
+            <input type="text" class="setting-control" value="Ты — Кибер, верный цифровой спутник KINGSAID." />
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>🪟 Поведение Windows</h3>
+          <div class="setting-row">
+            <span class="setting-label">Хоткей принудительного вызова:</span>
+            <input type="text" class="setting-control" value="Alt + Space" />
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Автозагрузка при старте ПК:</span>
+            <select class="setting-control">
+              <option selected>Включено (В системный трей)</option>
+              <option>Выключено</option>
+            </select>
+          </div>
         </div>
       </div>
-
-      <div class="mouth" id="m"></div>
-    </div>
-
-    <!-- Live Subtitle Box -->
-    <div class="subtitle-container">
-      <div class="subtitle-label">КИБЕР // ГОЛОСОВОЙ ОТКЛИК</div>
-      <div class="subtitle-body" id="subText">Ну... почти, сэр.</div>
-    </div>
-
-    <!-- Quick Windows Control Chips -->
-    <div class="macro-chips">
-      <div class="chip" onclick="quickSend('сверни всё')">🗕 Свернуть всё</div>
-      <div class="chip" onclick="quickSend('открой браузер')">🌐 Браузер</div>
-      <div class="chip" onclick="quickSend('найди на ютубе музыку')">▶ YouTube</div>
-      <div class="chip" onclick="quickSend('запусти steam')">🎮 Steam</div>
-      <div class="chip" onclick="quickSend('пауза')">⏯ Пауза</div>
-    </div>
-  </div>
-
-  <!-- RIGHT: Stream Log -->
-  <div class="glass-card">
-    <div class="card-title">
-      <span>ЖУРНАЛ СОБЫТИЙ</span>
-      <span style="color: var(--lime-core);">REALTIME</span>
-    </div>
-
-    <div class="chat-stream-box" id="streamLog">
-      <div class="chat-bubble ai">
-        <div class="bubble-time">SYSTEM BOOT</div>
-        <div>Cyber Assistant запущен в оконном режиме Windows. Модули WinAPI активны.</div>
-      </div>
-    </div>
-
-    <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 10px;">
-      Хоткей вызова: <strong>Alt + Space</strong>
     </div>
   </div>
 
@@ -511,13 +735,8 @@
 <!-- Modal Update Dialog -->
 <div class="update-modal" id="updateModal">
   <div class="update-box">
-    <div class="update-title">
-      <span>🚀</span>
-      <span>Найдено обновление!</span>
-    </div>
-    <div class="update-desc" id="updateDesc">
-      Доступна новая версия с вашего GitHub. Установить прямо сейчас?
-    </div>
+    <div class="update-title"><span>🚀</span> Найдено обновление!</div>
+    <div class="update-desc" id="updateDesc">Доступна новая версия с вашего GitHub. Установить?</div>
     <div class="update-btn-row">
       <button class="btn-modal-cancel" onclick="closeUpdateModal()">Позже</button>
       <button class="btn-modal-apply" onclick="applyUpdateNow()">Обновить</button>
@@ -535,9 +754,11 @@
   const m = document.getElementById('m');
   const subText = document.getElementById('subText');
 
-  // Eye tracking mouse
+  // Eye Tracking Mouse
   window.addEventListener('mousemove', (e) => {
-    const rect = document.getElementById('head').getBoundingClientRect();
+    const head = document.getElementById('head');
+    if (!head) return;
+    const rect = head.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
 
@@ -547,24 +768,29 @@
     const ox = Math.cos(angle) * dist;
     const oy = Math.sin(angle) * dist;
 
-    pL.style.transform = `translate(${ox}px, ${oy}px)`;
-    pR.style.transform = `translate(${ox}px, ${oy}px)`;
+    if (pL && pR) {
+      pL.style.transform = `translate(${ox}px, ${oy}px)`;
+      pR.style.transform = `translate(${ox}px, ${oy}px)`;
+    }
   });
 
-  // Natural Blinking
+  // Blinking
   function blink() {
-    eL.style.transform = 'translateY(0%)';
-    eR.style.transform = 'translateY(0%)';
-    setTimeout(() => {
-      eL.style.transform = 'translateY(-100%)';
-      eR.style.transform = 'translateY(-100%)';
-    }, 130);
+    if (eL && eR) {
+      eL.style.transform = 'translateY(0%)';
+      eR.style.transform = 'translateY(0%)';
+      setTimeout(() => {
+        eL.style.transform = 'translateY(-100%)';
+        eR.style.transform = 'translateY(-100%)';
+      }, 130);
+    }
     setTimeout(blink, 2400 + Math.random() * 3800);
   }
   blink();
 
   function setEmotion(type, phrase) {
-    if (phrase) subText.innerText = phrase;
+    if (phrase && subText) subText.innerText = phrase;
+    if (!bL || !bR || !m) return;
 
     if (type === 'guilty') {
       bL.style.transform = 'rotate(14deg)';
@@ -583,56 +809,24 @@
     }
   }
 
-  function sendToPythonBackend(cmdText) {
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.execute_command(cmdText).then(function(res) {
-        setEmotion(res.emotion, res.reply);
-        addStreamLog(cmdText, res.reply, res.action);
-      });
-    } else {
-      console.log('Browser simulation:', cmdText);
+  // --- TAB SWITCHER (Главная, Плагины, Команды, Настройки) ---
+  function switchMainTab(viewId, el) {
+    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.pill-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    el.classList.add('active');
+
+    if (viewId === 'tabPlugins') {
+      loadPluginsUI();
     }
   }
 
-  function addStreamLog(cmd, reply, action) {
-    const log = document.getElementById('streamLog');
-    if (!log) return;
-    const card = document.createElement('div');
-    card.className = 'chat-bubble ' + (action === 'llm' ? 'ai' : 'cmd');
-    const time = new Date().toTimeString().split(' ')[0];
-    card.innerHTML = `<div class="bubble-time">${time} • ${action.toUpperCase()}</div><div>${reply}</div>`;
-    log.prepend(card);
-  }
-
-  function handleEnter(e) {
-    if (e.key === 'Enter') {
-      const val = document.getElementById('cmdInput').value.trim();
-      if (val) {
-        quickSend(val);
-        document.getElementById('cmdInput').value = '';
-      }
-    }
-  }
-
-  function quickSend(text) {
-    subText.innerText = `Выполняю: «${text}»...`;
-    sendToPythonBackend(text);
-  }
-
-  function triggerMascotClick() {
-    setEmotion('happy', 'Ой, щекотно, сэр!');
-  }
-
-  function micClick() {
-    setEmotion('listen', 'Слушаю вас... Говорите команду!');
-  }
-
-  // --- WINDOW CONTROLS & UPDATER ---
-  
+  // --- QT6 WEBCHANNEL BRIDGE ---
   var pyBridge = null;
   if (typeof QWebChannel !== 'undefined') {
     new QWebChannel(qt.webChannelTransport, function (channel) {
       pyBridge = channel.objects.pyBridge;
+      loadPluginsUI();
     });
   }
 
@@ -645,6 +839,34 @@
       });
     }
   }
+
+  function addStreamLog(cmd, reply, action) {
+    var log = document.getElementById('streamLog');
+    if (!log) return;
+    var card = document.createElement('div');
+    card.className = 'chat-bubble ' + (action === 'llm' ? 'ai' : 'cmd');
+    var time = new Date().toTimeString().split(' ')[0];
+    card.innerHTML = '<div class="bubble-time">' + time + ' • ' + action.toUpperCase() + '</div><div>' + reply + '</div>';
+    log.prepend(card);
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') {
+      var val = document.getElementById('cmdInput').value.trim();
+      if (val) {
+        quickSend(val);
+        document.getElementById('cmdInput').value = '';
+      }
+    }
+  }
+
+  function quickSend(text) {
+    if (subText) subText.innerText = 'Выполняю: «' + text + '»...';
+    sendToPythonBackend(text);
+  }
+
+  function triggerMascotClick() { setEmotion('happy', 'Ой, щекотно, сэр!'); }
+  function micClick() { setEmotion('listen', 'Слушаю вас... Говорите команду!'); }
 
   function windowMinimize() { if (pyBridge) pyBridge.minimizeWindow(); }
   function windowToggleMax() { if (pyBridge) pyBridge.toggleMaximizeWindow(); }
@@ -670,6 +892,8 @@
     }
   }
 
+  function closeUpdateModal() { document.getElementById('updateModal').style.display = 'none'; }
+
   function applyUpdateNow() {
     var txt = document.getElementById('updateBtnText');
     txt.innerText = 'Обновляюсь...';
@@ -686,11 +910,74 @@
       });
     }
   }
- else {
-          alert('Ошибка обновления: ' + res.error);
-        }
-        txt.innerText = 'Проверить обновления';
+
+  // Загрузка и рендер плагинов из Python PluginManager
+  function loadPluginsUI() {
+    var container = document.getElementById('pluginCatalog');
+    if (!container) return;
+
+    if (pyBridge) {
+      pyBridge.getPlugins(function(resStr) {
+        var list = JSON.parse(resStr);
+        renderPluginsList(list, container);
       });
+    } else {
+      // Демо-данные для браузера
+      var demo = [
+        {id:'browser_control', name:'Web Browser & YouTube Control', author:'Cyber Core', desc:'Голосовой поиск в Google/Яндекс, открытие ссылок, запуск YouTube и поиск видео.', icon:'🌐', enabled:true},
+        {id:'window_manager', name:'Windows Desktop & Window Manager', author:'WinAPI Tools', desc:'Сворачивание всех окон (Win+D), закрытие программ, переключение между активными окнами.', icon:'🗔', enabled:true},
+        {id:'media_sync', name:'Spotify & Media Controls', author:'Audio Team', desc:'Управление громкостью, системный Mute, пауза, плей и переключение треков.', icon:'🎵', enabled:true},
+        {id:'telegram_bridge', name:'Telegram Remote Bridge', author:'Community', desc:'Удаленное управление домашним компьютером через Telegram-бота со смартфона.', icon:'✈️', enabled:false},
+        {id:'obs_streamer', name:'OBS Studio & Stream Deck', author:'Stream Tools', desc:'Голосовое переключение сцен в OBS, включение микрофона и запуск трансляции.', icon:'🎙️', enabled:false},
+        {id:'game_booster', name:'Steam & Game Launcher', author:'Gaming Mode', desc:'Автоматический запуск игр, очистка памяти и включение игрового режима.', icon:'🎮', enabled:true}
+      ];
+      renderPluginsList(demo, container);
+    }
+  }
+
+  function renderPluginsList(list, container) {
+    container.innerHTML = '';
+    list.forEach(function(p) {
+      var card = document.createElement('div');
+      card.className = 'plugin-card';
+      var stateClass = p.enabled ? '' : 'off';
+      var stateText = p.enabled ? 'Включен' : 'Отключен';
+
+      card.innerHTML = 
+        '<div class="plugin-head">' +
+          '<div class="plugin-icon-box">' + p.icon + '</div>' +
+          '<div class="plugin-info">' +
+            '<h3>' + p.name + '</h3>' +
+            '<p>by ' + p.author + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="plugin-desc">' + p.desc + '</div>' +
+        '<div class="plugin-footer">' +
+          '<span style="font-size: 11px; color: rgba(255,255,255,0.4);">Модуль активен</span>' +
+          '<button class="btn-toggle-plugin ' + stateClass + '" onclick="togglePluginClick(\'' + p.id + '\', this)">' + stateText + '</button>' +
+        '</div>';
+      container.appendChild(card);
+    });
+  }
+
+  function togglePluginClick(pluginId, btn) {
+    if (pyBridge) {
+      pyBridge.togglePlugin(pluginId, function(resStr) {
+        var res = JSON.parse(resStr);
+        if (res.success) {
+          if (res.enabled) {
+            btn.className = 'btn-toggle-plugin';
+            btn.innerText = 'Включен';
+          } else {
+            btn.className = 'btn-toggle-plugin off';
+            btn.innerText = 'Отключен';
+          }
+        }
+      });
+    } else {
+      var isOff = btn.classList.contains('off');
+      btn.className = isOff ? 'btn-toggle-plugin' : 'btn-toggle-plugin off';
+      btn.innerText = isOff ? 'Включен' : 'Отключен';
     }
   }
 </script>
