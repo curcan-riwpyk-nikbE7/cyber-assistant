@@ -97,91 +97,101 @@
     gap: 6px;
     transition: all 0.2s;
   }
-  .btn-update:hover {
-    background: var(--accent-cyan);
-    color: #000;
-  }
+  .btn-update:hover { background: rgba(6, 182, 212, 0.25); border-color: var(--accent-cyan); }
   .btn-update.has-update {
-    background: rgba(249, 115, 22, 0.2);
-    border-color: var(--accent-orange);
-    color: var(--accent-orange);
+    background: rgba(132, 204, 22, 0.2);
+    border-color: var(--lime-core);
+    color: var(--lime-core);
+    animation: pulseUpdate 1.5s infinite;
+  }
+  @keyframes pulseUpdate {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(132, 204, 22, 0); }
   }
 
-  .win-controls {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-  }
+  .win-controls { display: flex; align-items: center; gap: 4px; }
   .win-btn {
-    width: 32px;
+    width: 28px;
     height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
     cursor: pointer;
-    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.6);
     font-size: 12px;
+    transition: all 0.15s;
   }
   .win-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
   .win-btn.close:hover { background: #ef4444; color: #fff; }
 
-  /* 2. SUB-BAR: Navigation Tabs */
+  /* 2. SUB-BAR WITH STATUS PILLS (Astra style) */
   .nav-strip {
     height: 48px;
-    background: rgba(14, 18, 25, 0.85);
-    backdrop-filter: blur(20px);
+    background: rgba(8, 11, 16, 0.85);
     border-bottom: 1px solid var(--card-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
-    z-index: 20;
+    padding: 0 20px;
+    z-index: 45;
   }
-  .nav-pills {
-    display: flex;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 3px;
-    gap: 4px;
-  }
+  .nav-pills { display: flex; align-items: center; gap: 6px; }
   .pill-tab {
-    padding: 6px 16px;
-    border-radius: 7px;
+    padding: 6px 14px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
     transition: all 0.2s;
   }
-  .pill-tab:hover { color: #fff; }
+  .pill-tab:hover { color: #fff; background: rgba(255,255,255,0.06); }
   .pill-tab.active {
     background: rgba(255, 255, 255, 0.12);
     color: #fff;
     font-weight: 600;
   }
+
   .strip-status {
     display: flex;
     align-items: center;
-    gap: 14px;
-    font-size: 11px;
-    font-family: var(--font-mono);
-    color: rgba(255, 255, 255, 0.5);
+    gap: 8px;
   }
-  .strip-status strong { color: #fff; }
+
+  /* Astra Status Pills */
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .status-pill:hover {
+    background: rgba(132, 204, 22, 0.12);
+    border-color: var(--lime-core);
+  }
+  .status-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--lime-core);
+    box-shadow: 0 0 6px var(--lime-core);
+  }
 
   /* 3. WORKSPACE CONTAINER (Tab Switcher) */
   .view-wrapper {
     flex: 1;
     overflow: hidden;
     position: relative;
-    padding-bottom: 74px; /* Отступ под нижнюю капсулу */
+    padding-bottom: 74px;
   }
   .tab-view {
     position: absolute;
     inset: 0;
-    padding: 20px 24px 80px 24px;
+    padding: 18px 24px 80px 24px;
     display: none;
     overflow-y: auto;
   }
@@ -249,7 +259,7 @@
   .stat-track { width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
   .stat-bar { height: 100%; border-radius: 3px; }
 
-  /* Center Mascot Stage */
+  /* Center Stage */
   .center-stage {
     display: flex;
     flex-direction: column;
@@ -258,10 +268,35 @@
     padding: 16px;
     text-align: center;
   }
+
+  .avatar-switcher-bar {
+    display: flex;
+    gap: 6px;
+    background: rgba(10, 13, 19, 0.7);
+    border: 1px solid var(--card-border);
+    padding: 3px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .avatar-switch-btn {
+    padding: 3px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .avatar-switch-btn.active {
+    background: var(--lime-core);
+    color: #000;
+  }
+
+  /* 1. Живой Маскот Кибера */
   .mascot-head {
     position: relative;
-    width: 170px;
-    height: 170px;
+    width: 160px;
+    height: 160px;
     border-radius: 50%;
     background: radial-gradient(circle at 40% 35%, 
       #d9f99d 0%, 
@@ -280,25 +315,41 @@
     animation: floatBreathe 4s ease-in-out infinite alternate;
     transition: transform 0.2s;
   }
-  .mascot-head:hover { transform: scale(1.06); }
+  .mascot-head:hover { transform: scale(1.05); }
 
-  .eyebrows { position: absolute; top: 28px; display: flex; gap: 34px; }
-  .brow { width: 20px; height: 4px; background: rgba(255, 255, 255, 0.7); border-radius: 4px; transform: rotate(12deg); transition: transform 0.3s; }
+  .eyebrows { position: absolute; top: 26px; display: flex; gap: 32px; }
+  .brow { width: 18px; height: 4px; background: rgba(255, 255, 255, 0.7); border-radius: 4px; transform: rotate(12deg); transition: transform 0.3s; }
   .brow.r { transform: rotate(-12deg); }
 
-  .eyes { position: absolute; top: 42px; display: flex; gap: 18px; }
-  .eye { width: 40px; height: 56px; background: #fff; border-radius: 50%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .pupil { width: 28px; height: 38px; background: #142207; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; transition: transform 0.05s ease-out; }
-  .glare-1 { position: absolute; top: 5px; left: 5px; width: 11px; height: 11px; background: #fff; border-radius: 50%; }
-  .glare-2 { position: absolute; bottom: 6px; right: 6px; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
+  .eyes { position: absolute; top: 40px; display: flex; gap: 16px; }
+  .eye { width: 38px; height: 54px; background: #fff; border-radius: 50%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .pupil { width: 26px; height: 36px; background: #142207; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; transition: transform 0.05s ease-out; }
+  .glare-1 { position: absolute; top: 5px; left: 5px; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
+  .glare-2 { position: absolute; bottom: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; }
   .eyelid { position: absolute; inset: 0; background: #84cc16; border-radius: 50%; transform: translateY(-100%); transition: transform 0.12s; }
-  .mouth { position: absolute; bottom: 32px; width: 13px; height: 7px; background: #1a3307; border-radius: 0 0 14px 14px; transition: all 0.2s; }
+  .mouth { position: absolute; bottom: 28px; width: 13px; height: 7px; background: #1a3307; border-radius: 0 0 14px 14px; transition: all 0.2s; }
+
+  /* 2. Cyber Orb (Стиль Glocal / Jasper) */
+  .cyber-orb-container {
+    display: none;
+    width: 170px;
+    height: 170px;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .orb-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+  }
 
   .subtitle-container { margin-top: 10px; }
   .subtitle-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 4px; }
-  .subtitle-body { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; color: #fff; min-height: 28px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+  .subtitle-body { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; color: #fff; min-height: 26px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
-  .macro-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+  .macro-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
   .chip {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--card-border);
@@ -310,6 +361,16 @@
     transition: all 0.2s;
   }
   .chip:hover { background: rgba(132, 204, 22, 0.2); border-color: var(--lime-core); color: #fff; }
+  .chip.highlight {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.35);
+    color: var(--accent-cyan);
+  }
+  .chip.highlight:hover {
+    background: rgba(6, 182, 212, 0.3);
+    border-color: var(--accent-cyan);
+    color: #fff;
+  }
 
   /* Activity Log */
   .chat-stream-box { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
@@ -318,7 +379,7 @@
   .chat-bubble.cmd { border-left: 3px solid var(--accent-cyan); }
   .bubble-time { font-size: 9px; color: rgba(255,255,255,0.35); font-family: var(--font-mono); margin-bottom: 4px; }
 
-  /* TAB 2: ПЛАГИНЫ (Каталог расширений в стиле Astra Store) */
+  /* TAB 2: ПЛАГИНЫ (Astra Plugin Store) */
   .plugin-catalog {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -362,7 +423,63 @@
     color: rgba(255,255,255,0.5);
   }
 
-  /* TAB 3: НАСТРОЙКИ (Astra Style Settings) */
+  /* TAB 3: СЦЕНАРИИ И МАКРОСЫ (Astra Node Scenarios) */
+  .scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+  .scenario-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .scenario-card:hover { border-color: rgba(255,255,255,0.2); }
+  .scenario-head { display: flex; align-items: center; justify-content: space-between; }
+  .scenario-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(132, 204, 22, 0.15);
+    color: var(--lime-core);
+    font-weight: 600;
+  }
+  .scenario-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.65);
+  }
+  .scenario-step { display: flex; align-items: center; gap: 8px; }
+  .scenario-step span { width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; }
+  .btn-run-scenario {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--card-border);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-run-scenario:hover {
+    background: var(--lime-core);
+    color: #000;
+    border-color: var(--lime-core);
+  }
+
+  /* TAB 4: НАСТРОЙКИ (Astra Style Settings) */
   .settings-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -387,7 +504,7 @@
     border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 12px; outline: none;
   }
 
-  /* 4. BOTTOM INPUT CAPSULE (Всегда поверх внизу) */
+  /* 4. BOTTOM INPUT CAPSULE */
   .bottom-station {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -430,7 +547,7 @@
   .btn-modal-cancel { background: rgba(255,255,255,0.08); border: none; color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; }
   .btn-modal-apply { background: var(--accent-cyan); border: none; color: #000; font-weight: 600; padding: 6px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; }
 
-  @keyframes floatBreathe { 0% { transform: translateY(0px) scale(0.99); } 100% { transform: translateY(-6px) scale(1.02); } }
+  @keyframes floatBreathe { 0% { transform: translateY(0px) scale(0.99); } 100% { transform: translateY(-5px) scale(1.02); } }
 </style>
 </head>
 <body>
@@ -440,7 +557,7 @@
   <div class="titlebar-left">
     <div class="app-icon">К</div>
     <span>CYBER ASSISTANT</span>
-    <span class="app-version">v2.1.0</span>
+    <span class="app-version">v2.2.0 • Pro</span>
   </div>
 
   <div class="titlebar-actions">
@@ -457,19 +574,27 @@
   </div>
 </div>
 
-<!-- 2. SUB-BAR TABS (Главная, Плагины, Команды, Настройки) -->
+<!-- 2. SUB-BAR WITH STATUS PILLS (Astra style) -->
 <div class="nav-strip">
   <div class="nav-pills">
     <div class="pill-tab active" onclick="switchMainTab('tabHome', this)">Главная</div>
+    <div class="pill-tab" onclick="switchMainTab('tabScenarios', this)">⚡ Сценарии</div>
     <div class="pill-tab" onclick="switchMainTab('tabPlugins', this)">🧩 Плагины</div>
     <div class="pill-tab" onclick="switchMainTab('tabCommands', this)">>_ Команды</div>
     <div class="pill-tab" onclick="switchMainTab('tabSettings', this)">⚙️ Настройки</div>
   </div>
 
   <div class="strip-status">
-    <div>CUDA: <strong>RTX 5060</strong></div>
-    <div>STT: <strong style="color: var(--lime-core);">160ms</strong></div>
-    <div>ТРИГГЕР: <strong>«КИБЕР»</strong></div>
+    <div class="status-pill" title="Нажмите для настроек LLM" onclick="switchMainTab('tabSettings', document.querySelectorAll('.pill-tab')[4])">
+      <div class="dot"></div>
+      <span>LLM: <strong>Ollama Local</strong></span>
+    </div>
+    <div class="status-pill" title="STT движок">
+      <span>🎙️ <strong>Whisper 160ms</strong></span>
+    </div>
+    <div class="status-pill" title="Озвучка">
+      <span>🔊 <strong>DmitryNeural</strong></span>
+    </div>
   </div>
 </div>
 
@@ -516,19 +641,27 @@
               <div class="stat-track"><div class="stat-bar" id="gpuBar" style="width: 18%; background: var(--lime-core);"></div></div>
             </div>
             <div class="stat-item">
-              <div class="stat-meta"><span>ОЗУ</span><strong>12.4 / 32 GB</strong></div>
-              <div class="stat-track"><div class="stat-bar" style="width: 38%; background: var(--accent-purple);"></div></div>
+              <div class="stat-meta"><span>ОЗУ</span><strong id="ramVal">12.4 / 32 GB</strong></div>
+              <div class="stat-track"><div class="stat-bar" id="ramBar" style="width: 38%; background: var(--accent-purple);"></div></div>
             </div>
             <div class="stat-item">
-              <div class="stat-meta"><span>Диск C:</span><strong>91.9 GB свободно</strong></div>
-              <div class="stat-track"><div class="stat-bar" style="width: 53%; background: var(--accent-orange);"></div></div>
+              <div class="stat-meta"><span>Диск C:</span><strong id="diskVal">90.2 GB свободно</strong></div>
+              <div class="stat-track"><div class="stat-bar" id="diskBar" style="width: 53%; background: var(--accent-orange);"></div></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- CENTER: Mascot -->
+      <!-- CENTER: Mascot & Jasper Orb -->
       <div class="glass-card center-stage">
+        
+        <!-- Переключатель стиля: Кибер / Cyber Orb (как Jasper) -->
+        <div class="avatar-switcher-bar">
+          <div class="avatar-switch-btn active" id="btnModeMascot" onclick="setAvatarMode('mascot')">Маскот Кибер</div>
+          <div class="avatar-switch-btn" id="btnModeOrb" onclick="setAvatarMode('orb')">Cyber Orb (Jasper)</div>
+        </div>
+
+        <!-- 1. Анимированный Маскот -->
         <div class="mascot-head" id="head" onclick="triggerMascotClick()">
           <div class="eyebrows">
             <div class="brow" id="bL"></div>
@@ -549,12 +682,18 @@
           <div class="mouth" id="m"></div>
         </div>
 
+        <!-- 2. Cyber Orb (Аудио-реактивная сфера Jasper) -->
+        <div class="cyber-orb-container" id="orbContainer" onclick="triggerMascotClick()">
+          <canvas class="orb-canvas" id="orbCanvas" width="180" height="180"></canvas>
+        </div>
+
         <div class="subtitle-container">
           <div class="subtitle-label">КИБЕР // ГОЛОСОВОЙ ОТКЛИК</div>
-          <div class="subtitle-body" id="subText">Ну... почти, сэр.</div>
+          <div class="subtitle-body" id="subText">Добро пожаловать, сэр! Все системы готовы.</div>
         </div>
 
         <div class="macro-chips">
+          <div class="chip highlight" onclick="quickSend('утренний брифинг')">☀️ Утренний брифинг</div>
           <div class="chip" onclick="quickSend('сверни всё')">🗕 Свернуть всё</div>
           <div class="chip" onclick="quickSend('открой браузер')">🌐 Браузер</div>
           <div class="chip" onclick="quickSend('найди на ютубе музыку')">▶ YouTube</div>
@@ -573,7 +712,7 @@
         <div class="chat-stream-box" id="streamLog">
           <div class="chat-bubble ai">
             <div class="bubble-time">SYSTEM BOOT</div>
-            <div>Cyber Assistant Qt6 Runtime активен. Плагины загружены.</div>
+            <div>Cyber Assistant v2.2.0 Pro активен. Ядро WinAPI и статус-панель запущены.</div>
           </div>
         </div>
 
@@ -585,7 +724,58 @@
     </div>
   </div>
 
-  <!-- VIEW 2: ПЛАГИНЫ (Astra Plugin Store) -->
+  <!-- VIEW 2: СЦЕНАРИИ И МАКРОСЫ (Astra Node Scenarios) -->
+  <div class="tab-view" id="tabScenarios">
+    <div style="width: 100%;">
+      <div style="margin-bottom: 16px;">
+        <h2 style="font-size: 16px; font-weight: 700;">⚡ Готовые сценарии и макросы автоматизации</h2>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Цепочки действий в 1 клик или по одной голосовой команде</p>
+      </div>
+
+      <div class="scenarios-grid">
+        <div class="scenario-card">
+          <div class="scenario-head">
+            <h3 style="font-size: 14px; font-weight: 600;">☀️ Утренний брифинг</h3>
+            <span class="scenario-badge">ГОЛОСОВОЙ ОТЧЕТ</span>
+          </div>
+          <div class="scenario-steps">
+            <div class="scenario-step"><span>1</span> Запрос времени и даты</div>
+            <div class="scenario-step"><span>2</span> Проверка нагрузки CPU, RAM и SSD</div>
+            <div class="scenario-step"><span>3</span> Голосовой отчет о готовности систем</div>
+          </div>
+          <button class="btn-run-scenario" onclick="quickSend('утренний брифинг')">▶ Запустить брифинг</button>
+        </div>
+
+        <div class="scenario-card">
+          <div class="scenario-head">
+            <h3 style="font-size: 14px; font-weight: 600;">💻 Режим разработки / Работы</h3>
+            <span class="scenario-badge">ФОКУС</span>
+          </div>
+          <div class="scenario-steps">
+            <div class="scenario-step"><span>1</span> Запуск браузера Google Chrome</div>
+            <div class="scenario-step"><span>2</span> Подготовка рабочей среды</div>
+            <div class="scenario-step"><span>3</span> Отчет о готовности</div>
+          </div>
+          <button class="btn-run-scenario" onclick="quickSend('режим работы')">▶ Включить рабочий режим</button>
+        </div>
+
+        <div class="scenario-card">
+          <div class="scenario-head">
+            <h3 style="font-size: 14px; font-weight: 600;">🎮 Игровой режим</h3>
+            <span class="scenario-badge">FPS BOOST</span>
+          </div>
+          <div class="scenario-steps">
+            <div class="scenario-step"><span>1</span> Сворачивание всех фоновых окон</div>
+            <div class="scenario-step"><span>2</span> Запуск клиента Steam</div>
+            <div class="scenario-step"><span>3</span> Очистка фоновых помех</div>
+          </div>
+          <button class="btn-run-scenario" onclick="quickSend('игровой режим')">▶ Включить игровой режим</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 3: ПЛАГИНЫ (Astra Plugin Store) -->
   <div class="tab-view" id="tabPlugins">
     <div style="width: 100%;">
       <div style="margin-bottom: 16px;">
@@ -598,7 +788,7 @@
     </div>
   </div>
 
-  <!-- VIEW 3: КОМАНДЫ -->
+  <!-- VIEW 4: КОМАНДЫ -->
   <div class="tab-view" id="tabCommands">
     <div style="width: 100%;">
       <div style="margin-bottom: 16px;">
@@ -632,13 +822,13 @@
           <h3>🎵 Звук и Мультимедиа</h3>
           <div class="setting-sub">• «Кибер, пауза / плей» — переключение трека</div>
           <div class="setting-sub">• «Кибер, следующий трек» — перелистывание песни</div>
-          <div class="setting-sub">• «Кибер, статус системы» — сводка температуры и нагрузки ПК</div>
+          <div class="setting-sub">• «Кибер, утренний брифинг» — утренняя сводка времени и железа</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- VIEW 4: НАСТРОЙКИ -->
+  <!-- VIEW 5: НАСТРОЙКИ -->
   <div class="tab-view" id="tabSettings">
     <div style="width: 100%;">
       <div style="margin-bottom: 16px;">
@@ -754,10 +944,98 @@
   const m = document.getElementById('m');
   const subText = document.getElementById('subText');
 
+  // Переключение стиля аватара (Маскот / Cyber Orb Jasper)
+  let currentAvatarMode = 'mascot';
+  function setAvatarMode(mode) {
+    currentAvatarMode = mode;
+    const mascotHead = document.getElementById('head');
+    const orbContainer = document.getElementById('orbContainer');
+    const btnMascot = document.getElementById('btnModeMascot');
+    const btnOrb = document.getElementById('btnModeOrb');
+
+    if (mode === 'orb') {
+      mascotHead.style.display = 'none';
+      orbContainer.style.display = 'flex';
+      btnMascot.classList.remove('active');
+      btnOrb.classList.add('active');
+      startOrbAnimation();
+    } else {
+      mascotHead.style.display = 'flex';
+      orbContainer.style.display = 'none';
+      btnMascot.classList.add('active');
+      btnOrb.classList.remove('active');
+    }
+  }
+
+  // --- CYBER ORB CANVAS RENDERER (Jasper / Glocal Style) ---
+  let orbCanvas = document.getElementById('orbCanvas');
+  let orbCtx = orbCanvas.getContext('2d');
+  let orbAnimationRunning = false;
+  let orbPulse = 0;
+
+  function startOrbAnimation() {
+    if (orbAnimationRunning) return;
+    orbAnimationRunning = true;
+    animateOrb();
+  }
+
+  function animateOrb() {
+    if (currentAvatarMode !== 'orb') {
+      orbAnimationRunning = false;
+      return;
+    }
+    orbPulse += 0.04;
+    const w = orbCanvas.width;
+    const h = orbCanvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+
+    orbCtx.clearRect(0, 0, w, h);
+
+    // Внешнее свечение
+    const glowRad = 60 + Math.sin(orbPulse) * 8;
+    const glowGrad = orbCtx.createRadialGradient(cx, cy, 20, cx, cy, 80);
+    glowGrad.addColorStop(0, 'rgba(163, 230, 53, 0.8)');
+    glowGrad.addColorStop(0.5, 'rgba(132, 204, 22, 0.3)');
+    glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    orbCtx.fillStyle = glowGrad;
+    orbCtx.beginPath();
+    orbCtx.arc(cx, cy, 85, 0, Math.PI * 2);
+    orbCtx.fill();
+
+    // Плазменные орбиты (кольца Jasper)
+    orbCtx.save();
+    orbCtx.translate(cx, cy);
+    for (let i = 0; i < 3; i++) {
+      orbCtx.beginPath();
+      orbCtx.strokeStyle = i === 0 ? '#ccff00' : (i === 1 ? '#06b6d4' : '#84cc16');
+      orbCtx.lineWidth = 2.5;
+      orbCtx.rotate(orbPulse * (i % 2 === 0 ? 0.6 : -0.8));
+      const rx = 50 + Math.sin(orbPulse * 1.5 + i) * 6;
+      const ry = 28 + Math.cos(orbPulse * 1.2 + i) * 5;
+      orbCtx.ellipse(0, 0, rx, ry, i * Math.PI / 3, 0, Math.PI * 2);
+      orbCtx.stroke();
+    }
+    orbCtx.restore();
+
+    // Центральное ядро сферы
+    const coreGrad = orbCtx.createRadialGradient(cx - 8, cy - 8, 5, cx, cy, 38);
+    coreGrad.addColorStop(0, '#ffffff');
+    coreGrad.addColorStop(0.3, '#d9f99d');
+    coreGrad.addColorStop(0.7, '#84cc16');
+    coreGrad.addColorStop(1, '#1e3a07');
+    orbCtx.fillStyle = coreGrad;
+    orbCtx.beginPath();
+    orbCtx.arc(cx, cy, 36 + Math.sin(orbPulse * 2) * 3, 0, Math.PI * 2);
+    orbCtx.fill();
+
+    requestAnimationFrame(animateOrb);
+  }
+
   // Eye Tracking Mouse
   window.addEventListener('mousemove', (e) => {
     const head = document.getElementById('head');
-    if (!head) return;
+    if (!head || currentAvatarMode !== 'mascot') return;
     const rect = head.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
@@ -776,7 +1054,7 @@
 
   // Blinking
   function blink() {
-    if (eL && eR) {
+    if (eL && eR && currentAvatarMode === 'mascot') {
       eL.style.transform = 'translateY(0%)';
       eR.style.transform = 'translateY(0%)';
       setTimeout(() => {
@@ -796,7 +1074,7 @@
       bL.style.transform = 'rotate(14deg)';
       bR.style.transform = 'rotate(-14deg)';
       m.style.width = '14px'; m.style.height = '6px';
-    } else if (type === 'happy' || type === 'window' || type === 'app' || type === 'browser') {
+    } else if (type === 'happy' || type === 'window' || type === 'app' || type === 'browser' || type === 'briefing' || type === 'scenario') {
       bL.style.transform = 'rotate(-10deg) translateY(-3px)';
       bR.style.transform = 'rotate(10deg) translateY(-3px)';
       m.style.width = '20px'; m.style.height = '11px';
@@ -809,20 +1087,20 @@
     }
   }
 
-  // --- TAB SWITCHER (Главная, Плагины, Команды, Настройки) ---
+  // --- TAB SWITCHER (Главная, Сценарии, Плагины, Команды, Настройки) ---
   function switchMainTab(viewId, el) {
     document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.pill-tab').forEach(t => t.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
-    el.classList.add('active');
+    if (el) el.classList.add('active');
 
     if (viewId === 'tabPlugins') {
       loadPluginsUI();
     }
   }
 
-  // --- QT6 WEBCHANNEL BRIDGE ---
-    function sendToPythonBackend(cmdText) {
+  // --- BACKEND API BRIDGE ---
+  function sendToPythonBackend(cmdText) {
     fetch('/api/execute', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -877,6 +1155,10 @@
     });
   }
 
+  function closeUpdateModal() {
+    document.getElementById('updateModal').style.display = 'none';
+  }
+
   function loadPluginsUI() {
     var container = document.getElementById('pluginCatalog');
     if (!container) return;
@@ -885,6 +1167,31 @@
     .then(r => r.json())
     .then(list => renderPluginsList(list, container))
     .catch(() => {});
+  }
+
+  function renderPluginsList(plugins, container) {
+    container.innerHTML = '';
+    plugins.forEach(p => {
+      var card = document.createElement('div');
+      card.className = 'plugin-card';
+      card.innerHTML = `
+        <div class="plugin-head">
+          <div class="plugin-icon-box">${p.icon || '📦'}</div>
+          <div class="plugin-info">
+            <h3>${p.name}</h3>
+            <p>${p.category || 'Системный модуль'}</p>
+          </div>
+        </div>
+        <div class="plugin-desc">${p.description}</div>
+        <div class="plugin-footer">
+          <span style="font-size: 11px; color: rgba(255,255,255,0.4);">v${p.version || '1.0'}</span>
+          <button class="btn-toggle-plugin ${p.enabled ? '' : 'off'}" onclick="togglePluginClick('${p.id}', this)">
+            ${p.enabled ? 'Включен' : 'Отключен'}
+          </button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
   }
 
   function togglePluginClick(pluginId, btn) {
@@ -906,18 +1213,72 @@
       }
     });
   }
- else {
-            btn.className = 'btn-toggle-plugin off';
-            btn.innerText = 'Отключен';
-          }
-        }
-      });
-    } else {
-      var isOff = btn.classList.contains('off');
-      btn.className = isOff ? 'btn-toggle-plugin' : 'btn-toggle-plugin off';
-      btn.innerText = isOff ? 'Включен' : 'Отключен';
+
+  function addStreamLog(cmd, reply, action) {
+    var log = document.getElementById('streamLog');
+    if (!log) return;
+    var d = new Date();
+    var timeStr = d.toTimeString().split(' ')[0];
+
+    var userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble cmd';
+    userBubble.innerHTML = `<div class="bubble-time">${timeStr} • ВВОД</div><div>${cmd}</div>`;
+    log.appendChild(userBubble);
+
+    var aiBubble = document.createElement('div');
+    aiBubble.className = 'chat-bubble ai';
+    aiBubble.innerHTML = `<div class="bubble-time">${timeStr} • ${action ? action.toUpperCase() : 'CYBER'}</div><div>${reply}</div>`;
+    log.appendChild(aiBubble);
+
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function quickSend(txt) {
+    sendToPythonBackend(txt);
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') {
+      var inp = document.getElementById('cmdInput');
+      var val = inp.value.trim();
+      if (val) {
+        sendToPythonBackend(val);
+        inp.value = '';
+      }
     }
   }
+
+  function micClick() {
+    setEmotion('listen', 'Слушаю вас, сэр...');
+    setTimeout(function() {
+      quickSend('утренний брифинг');
+    }, 1200);
+  }
+
+  function triggerMascotClick() {
+    quickSend('Кибер, как дела?');
+  }
+
+  // Телеметрия железа (каждые 3 секунды)
+  setInterval(() => {
+    fetch('/api/telemetry', {method: 'POST'})
+    .then(r => r.json())
+    .then(st => {
+      if (st.cpu_percent !== undefined) {
+        document.getElementById('cpuVal').innerText = st.cpu_percent + '%';
+        document.getElementById('cpuBar').style.width = st.cpu_percent + '%';
+      }
+      if (st.ram_percent !== undefined) {
+        document.getElementById('ramVal').innerText = st.ram_used_gb + ' / ' + st.ram_total_gb + ' GB';
+        document.getElementById('ramBar').style.width = st.ram_percent + '%';
+      }
+      if (st.disk_free_gb !== undefined) {
+        document.getElementById('diskVal').innerText = st.disk_free_gb + ' GB свободно';
+        document.getElementById('diskBar').style.width = st.disk_percent + '%';
+      }
+    })
+    .catch(() => {});
+  }, 3000);
 </script>
 
 </body>
