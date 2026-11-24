@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KINGSAID PRIME // Living Companion OS</title>
+<title>CYBER Assistant // KINGSAID OS</title>
 <style>
   :root {
     --bg-main: #06080d;
@@ -13,6 +13,7 @@
     --lime-glow: rgba(163, 230, 53, 0.4);
     --accent-orange: #f97316;
     --accent-cyan: #06b6d4;
+    --accent-purple: #8b5cf6;
     --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', 'Consolas', monospace;
   }
@@ -28,75 +29,131 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
   }
 
-  /* Deep Space Radial Ambient Glow behind Mascot */
-  .ambient-glow {
-    position: absolute;
-    top: 35%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 650px;
-    height: 450px;
-    background: radial-gradient(circle, rgba(132, 204, 22, 0.16) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 75%);
-    filter: blur(80px);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* 1. TOP HEADER (Компактный статус-бар с переключателями) */
-  .top-bar {
-    height: 56px;
+  /* 1. NATIVE APPLICATION TITLEBAR (Перетаскивание + Кнопки окна Windows + Обновление) */
+  .app-titlebar {
+    height: 42px;
+    background: rgba(10, 13, 19, 0.95);
     border-bottom: 1px solid var(--card-border);
-    background: rgba(10, 13, 18, 0.85);
-    backdrop-filter: blur(25px);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 28px;
-    z-index: 20;
+    padding: 0 16px;
+    z-index: 50;
+    -webkit-app-region: drag; /* Drag window in webview */
   }
 
-  .brand-area {
+  .titlebar-left {
     display: flex;
     align-items: center;
-    gap: 12px;
-  }
-  .brand-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--lime-core);
-    box-shadow: 0 0 12px var(--lime-core);
-    animation: blinkGlow 2s infinite ease-in-out;
-  }
-  .brand-name {
-    font-size: 15px;
+    gap: 10px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.5px;
   }
-  .brand-badge {
-    font-size: 10px;
-    padding: 2px 7px;
+  .app-icon {
+    width: 20px;
+    height: 20px;
     border-radius: 6px;
-    background: rgba(132, 204, 22, 0.15);
-    border: 1px solid rgba(132, 204, 22, 0.3);
-    color: #bef264;
-    font-weight: 600;
+    background: var(--lime-core);
+    box-shadow: 0 0 10px var(--lime-core);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-weight: 900;
+    font-size: 11px;
+  }
+  .app-version {
+    font-size: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.6);
   }
 
-  /* Center Nav Tabs */
+  /* Titlebar Action Buttons (Update + Window controls) */
+  .titlebar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    -webkit-app-region: no-drag;
+  }
+
+  /* Update Checker Button */
+  .btn-update {
+    background: rgba(6, 182, 212, 0.15);
+    border: 1px solid rgba(6, 182, 212, 0.35);
+    color: var(--accent-cyan);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .btn-update:hover {
+    background: var(--accent-cyan);
+    color: #000;
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.5);
+  }
+  .btn-update.has-update {
+    background: rgba(249, 115, 22, 0.2);
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    animation: pulseUpdate 2s infinite ease-in-out;
+  }
+
+  /* Native Windows Window Controls (Minimize, Maximize, Close) */
+  .win-controls {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+  }
+  .win-btn {
+    width: 32px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+    font-size: 12px;
+  }
+  .win-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+  .win-btn.close:hover { background: #ef4444; color: #fff; }
+
+  /* 2. SUB-BAR: Navigation Tabs */
+  .nav-strip {
+    height: 48px;
+    background: rgba(14, 18, 25, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 20;
+  }
   .nav-pills {
     display: flex;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--card-border);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 3px;
     gap: 4px;
   }
   .pill-tab {
-    padding: 6px 16px;
-    border-radius: 9px;
+    padding: 5px 14px;
+    border-radius: 7px;
     font-size: 12px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
@@ -109,24 +166,23 @@
     color: #fff;
     font-weight: 600;
   }
-
-  .top-right-tools {
+  .strip-status {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     font-size: 11px;
     font-family: var(--font-mono);
     color: rgba(255, 255, 255, 0.5);
   }
-  .top-right-tools strong { color: #fff; }
+  .strip-status strong { color: #fff; }
 
-  /* 2. MAIN WORKSPACE (3 Columns) */
+  /* 3. MAIN WORKSPACE (3 Columns) */
   .workspace-grid {
     flex: 1;
     display: grid;
-    grid-template-columns: 320px 1fr 340px;
-    padding: 20px 28px;
-    gap: 24px;
+    grid-template-columns: 310px 1fr 330px;
+    padding: 20px 24px;
+    gap: 20px;
     z-index: 10;
     overflow: hidden;
   }
@@ -134,10 +190,10 @@
   .glass-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 22px;
+    border-radius: 18px;
     backdrop-filter: blur(35px);
     box-shadow: 0 15px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.08);
-    padding: 20px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -152,102 +208,52 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
-  /* LEFT COLUMN: Media Player & Hardware Gauges */
+  /* Media Hub */
   .media-deck {
     background: rgba(10, 13, 19, 0.7);
     border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 14px;
+    border-radius: 14px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
-  .media-top {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .media-top { display: flex; align-items: center; gap: 12px; }
   .media-cover {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+    width: 40px; height: 40px; border-radius: 8px;
     background: linear-gradient(135deg, #f97316, #ef4444);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
   }
-  .media-meta h4 { font-size: 13px; font-weight: 600; }
-  .media-meta p { font-size: 11px; color: rgba(255,255,255,0.5); }
-  .media-bar {
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    cursor: pointer;
-  }
-  .media-fill {
-    width: 40%;
-    height: 100%;
-    background: #84cc16;
-    border-radius: 2px;
-  }
+  .media-meta h4 { font-size: 12px; font-weight: 600; }
+  .media-meta p { font-size: 10px; color: rgba(255,255,255,0.5); }
+  .media-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; }
+  .media-fill { width: 45%; height: 100%; background: var(--lime-core); border-radius: 2px; }
 
-  .stat-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 14px;
-  }
-  .stat-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .stat-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: rgba(255,255,255,0.7);
-  }
-  .stat-track {
-    width: 100%;
-    height: 5px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 3px;
-    overflow: hidden;
-  }
+  /* Hardware Monitoring */
+  .stat-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .stat-item { display: flex; flex-direction: column; gap: 4px; }
+  .stat-meta { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.7); }
+  .stat-track { width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
   .stat-bar { height: 100%; border-radius: 3px; }
 
-  /* CENTER COLUMN: Living Mascot Character Stage */
+  /* Center Mascot Stage */
   .center-stage {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 24px;
+    padding: 20px;
     text-align: center;
   }
-
-  /* Outer Sound Wave Rings */
-  .halo-ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid rgba(132, 204, 22, 0.25);
-    pointer-events: none;
-  }
-  .h-1 { width: 330px; height: 330px; animation: haloPulse 3.5s infinite ease-out; }
-  .h-2 { width: 270px; height: 270px; animation: haloPulse 3.5s infinite 0.8s ease-out; }
-
-  /* Character Head */
   .mascot-head {
     position: relative;
-    width: 190px;
-    height: 190px;
+    width: 175px;
+    height: 175px;
     border-radius: 50%;
     background: radial-gradient(circle at 40% 35%, 
       #d9f99d 0%, 
@@ -256,8 +262,8 @@
       #365314 100%
     );
     box-shadow: 
-      0 0 50px var(--lime-glow),
-      0 0 90px rgba(132, 204, 22, 0.25),
+      0 0 45px var(--lime-glow),
+      0 0 80px rgba(132, 204, 22, 0.25),
       inset 0 0 25px rgba(255, 255, 255, 0.6);
     display: flex;
     align-items: center;
@@ -268,244 +274,129 @@
   }
   .mascot-head:hover { transform: scale(1.06); }
 
-  /* Eyebrows */
-  .eyebrows {
-    position: absolute;
-    top: 34px;
-    display: flex;
-    gap: 38px;
-  }
-  .brow {
-    width: 22px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.7);
-    border-radius: 4px;
-    transform: rotate(12deg);
-    transition: transform 0.3s;
-  }
+  .eyebrows { position: absolute; top: 30px; display: flex; gap: 34px; }
+  .brow { width: 20px; height: 4px; background: rgba(255, 255, 255, 0.7); border-radius: 4px; transform: rotate(12deg); transition: transform 0.3s; }
   .brow.r { transform: rotate(-12deg); }
 
-  /* Big Anime-style tracking eyes */
-  .eyes {
-    position: absolute;
-    top: 48px;
-    display: flex;
-    gap: 20px;
-  }
-  .eye {
-    width: 44px;
-    height: 60px;
-    background: #fff;
-    border-radius: 50%;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .pupil {
-    width: 30px;
-    height: 40px;
-    background: #142207;
-    border-radius: 50%;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.05s ease-out;
-  }
-  .glare-1 {
-    position: absolute;
-    top: 5px; left: 5px;
-    width: 12px; height: 12px;
-    background: #fff;
-    border-radius: 50%;
-  }
-  .glare-2 {
-    position: absolute;
-    bottom: 7px; right: 7px;
-    width: 5px; height: 5px;
-    background: #fff;
-    border-radius: 50%;
-  }
-  .eyelid {
-    position: absolute;
-    inset: 0;
-    background: #84cc16;
-    border-radius: 50%;
-    transform: translateY(-100%);
-    transition: transform 0.12s;
-  }
-  .mouth {
-    position: absolute;
-    bottom: 38px;
-    width: 14px;
-    height: 8px;
-    background: #1a3307;
-    border-radius: 0 0 14px 14px;
-    transition: all 0.2s;
-  }
+  .eyes { position: absolute; top: 44px; display: flex; gap: 18px; }
+  .eye { width: 40px; height: 56px; background: #fff; border-radius: 50%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .pupil { width: 28px; height: 38px; background: #142207; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; transition: transform 0.05s ease-out; }
+  .glare-1 { position: absolute; top: 5px; left: 5px; width: 11px; height: 11px; background: #fff; border-radius: 50%; }
+  .glare-2 { position: absolute; bottom: 6px; right: 6px; width: 5px; height: 5px; background: #fff; border-radius: 50%; }
+  .eyelid { position: absolute; inset: 0; background: #84cc16; border-radius: 50%; transform: translateY(-100%); transition: transform 0.12s; }
+  .mouth { position: absolute; bottom: 34px; width: 13px; height: 7px; background: #1a3307; border-radius: 0 0 14px 14px; transition: all 0.2s; }
 
-  /* Captions text */
-  .subtitle-container {
-    margin-top: 16px;
-  }
-  .subtitle-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
-    margin-bottom: 6px;
-  }
-  .subtitle-body {
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: -0.4px;
-    color: #fff;
-    min-height: 34px;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
-  }
+  .subtitle-container { margin-top: 12px; }
+  .subtitle-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 4px; }
+  .subtitle-body { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; color: #fff; min-height: 32px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
-  /* Quick Emotion Chips */
-  .emotion-chips {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  .macro-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
   .chip {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--card-border);
-    padding: 6px 14px;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 11px;
     cursor: pointer;
     color: rgba(255,255,255,0.7);
     transition: all 0.2s;
   }
-  .chip:hover, .chip.active {
-    background: rgba(132, 204, 22, 0.2);
-    border-color: #84cc16;
-    color: #fff;
-  }
+  .chip:hover { background: rgba(132, 204, 22, 0.2); border-color: var(--lime-core); color: #fff; }
 
-  /* RIGHT COLUMN: Chat / Task Stream */
-  .chat-stream-box {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-right: 4px;
-  }
-  .chat-bubble {
-    background: rgba(10, 13, 20, 0.7);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 10px 14px;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-  .chat-bubble.ai { border-left: 3px solid #84cc16; }
-  .chat-bubble.cmd { border-left: 3px solid #06b6d4; }
-  .bubble-time { font-size: 10px; color: rgba(255,255,255,0.35); font-family: var(--font-mono); margin-bottom: 4px; }
+  /* Activity Log */
+  .chat-stream-box { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+  .chat-bubble { background: rgba(10, 13, 20, 0.7); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 12px; font-size: 12px; line-height: 1.4; }
+  .chat-bubble.ai { border-left: 3px solid var(--lime-core); }
+  .chat-bubble.cmd { border-left: 3px solid var(--accent-cyan); }
+  .bubble-time { font-size: 9px; color: rgba(255,255,255,0.35); font-family: var(--font-mono); margin-bottom: 4px; }
 
-  /* 3. BOTTOM VOICE CAPSULE (Orange Mic) */
-  .bottom-station {
-    height: 70px;
-    padding: 0 28px 16px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-  }
+  /* 4. BOTTOM INPUT CAPSULE */
+  .bottom-station { height: 64px; padding: 0 24px 14px 24px; display: flex; align-items: center; justify-content: center; z-index: 20; }
   .capsule-bar {
-    width: 640px;
-    height: 52px;
-    background: rgba(15, 19, 28, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 26px;
-    backdrop-filter: blur(30px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 25px rgba(132, 204, 22, 0.15);
-    display: flex;
-    align-items: center;
-    padding: 0 10px 0 18px;
-    gap: 14px;
+    width: 600px; height: 48px; background: rgba(15, 19, 28, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px;
+    backdrop-filter: blur(30px); display: flex; align-items: center;
+    padding: 0 8px 0 16px; gap: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
   }
-  .capsule-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #fff;
-    font-size: 13px;
-  }
+  .capsule-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 13px; font-family: inherit; }
   .mic-action-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 36px; height: 36px; border-radius: 50%;
     background: linear-gradient(135deg, #f97316, #ea580c);
-    border: none;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 0 16px rgba(249, 115, 22, 0.5);
-    transition: transform 0.2s;
+    border: none; color: #fff; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
   }
-  .mic-action-btn:hover { transform: scale(1.08); }
 
-  @keyframes floatBreathe {
-    0% { transform: translateY(0px) scale(0.99); }
-    100% { transform: translateY(-7px) scale(1.02); }
+  /* Modal Update Notification */
+  .update-modal {
+    display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px); z-index: 100; align-items: center; justify-content: center;
   }
-  @keyframes haloPulse {
-    0% { transform: scale(0.85); opacity: 0.5; }
-    100% { transform: scale(1.15); opacity: 0; }
+  .update-box {
+    width: 380px; background: rgba(16, 20, 30, 0.95); border: 1px solid rgba(6, 182, 212, 0.4);
+    border-radius: 16px; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    display: flex; flex-direction: column; gap: 14px;
   }
-  @keyframes blinkGlow {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-  }
+  .update-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .update-desc { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+  .update-btn-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+  .btn-modal-cancel { background: rgba(255,255,255,0.08); border: none; color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+  .btn-modal-apply { background: var(--accent-cyan); border: none; color: #000; font-weight: 600; padding: 6px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+
+  @keyframes floatBreathe { 0% { transform: translateY(0px) scale(0.99); } 100% { transform: translateY(-6px) scale(1.02); } }
+  @keyframes pulseUpdate { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; box-shadow: 0 0 14px rgba(249, 115, 22, 0.6); } }
 </style>
 </head>
 <body>
 
-<div class="ambient-glow"></div>
-
-<!-- 1. TOP HEADER -->
-<div class="top-bar">
-  <div class="brand-area">
-    <div class="brand-dot"></div>
-    <div class="brand-name">KINGSAID PRIME</div>
-    <div class="brand-badge">COMPANION v2.0</div>
+<!-- 1. NATIVE APPLICATION TITLEBAR -->
+<div class="app-titlebar">
+  <div class="titlebar-left">
+    <div class="app-icon">К</div>
+    <span>CYBER ASSISTANT</span>
+    <span class="app-version">v2.1.0</span>
   </div>
 
-  <div class="nav-pills">
-    <div class="pill-tab active" onclick="switchTab('Главная', this)">Главная</div>
-    <div class="pill-tab" onclick="switchTab('Команды и Макросы', this)">Команды</div>
-    <div class="pill-tab" onclick="switchTab('Диалоги', this)">История</div>
-    <div class="pill-tab" onclick="switchTab('Плагины', this)">Плагины</div>
-    <div class="pill-tab" onclick="switchTab('Настройки', this)">Настройки</div>
-  </div>
+  <div class="titlebar-actions">
+    <!-- Кнопка обновления приложения -->
+    <button class="btn-update" id="btnUpdateCheck" onclick="checkAppUpdates()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+      <span id="updateBtnText">Проверить обновления</span>
+    </button>
 
-  <div class="top-right-tools">
-    <div>CUDA: <strong>RTX 5060</strong></div>
-    <div>STT: <strong style="color: #84cc16;">160ms</strong></div>
-    <div>TRIGGER: <strong>«ДЖАРВИС»</strong></div>
+    <!-- Системные кнопки окна Windows -->
+    <div class="win-controls">
+      <div class="win-btn" title="Свернуть" onclick="windowMinimize()">─</div>
+      <div class="win-btn" title="Развернуть" onclick="windowToggleMax()">◻</div>
+      <div class="win-btn close" title="Закрыть" onclick="windowClose()">✕</div>
+    </div>
   </div>
 </div>
 
-<!-- 2. MAIN 3-COLUMN WORKSPACE -->
+<!-- 2. SUB-BAR TABS -->
+<div class="nav-strip">
+  <div class="nav-pills">
+    <div class="pill-tab active">Главная</div>
+    <div class="pill-tab" onclick="quickSend('покажи команды')">Команды</div>
+    <div class="pill-tab" onclick="quickSend('статус железа')">Мониторинг</div>
+    <div class="pill-tab" onclick="quickSend('настройки')">Настройки</div>
+  </div>
+
+  <div class="strip-status">
+    <div>CUDA: <strong>RTX 5060</strong></div>
+    <div>STT: <strong style="color: var(--lime-core);">160ms</strong></div>
+    <div>ТРИГГЕР: <strong>«КИБЕР»</strong></div>
+  </div>
+</div>
+
+<!-- 3. MAIN WORKSPACE -->
 <div class="workspace-grid">
 
-  <!-- LEFT: Media Player & Hardware -->
+  <!-- LEFT: Media & Hardware -->
   <div class="glass-card">
     <div>
       <div class="card-title">
         <span>МУЛЬТИМЕДИА</span>
-        <span style="color: #84cc16;">ACTIVE</span>
+        <span style="color: var(--lime-core);">ACTIVE</span>
       </div>
 
       <div class="media-deck">
@@ -513,50 +404,42 @@
           <div class="media-cover">🎵</div>
           <div class="media-meta">
             <h4>Пора возвращаться...</h4>
-            <p>БИ-2 • Chrome / Spotify</p>
+            <p>БИ-2 • Spotify / Chrome</p>
           </div>
         </div>
-        <div class="media-bar" onclick="seekTrack()">
-          <div class="media-fill" id="trackFill"></div>
-        </div>
+        <div class="media-bar"><div class="media-fill"></div></div>
       </div>
     </div>
 
     <div>
-      <div class="card-title" style="margin-top: 20px;">
+      <div class="card-title" style="margin-top: 16px;">
         <span>СИСТЕМНЫЙ МОНИТОРИНГ</span>
         <span style="font-family: var(--font-mono); font-size: 10px;">RYZEN 5600X</span>
       </div>
 
       <div class="stat-group">
         <div class="stat-item">
-          <div class="stat-meta"><span>ЦП (Процессор)</span><strong id="cpuVal">24%</strong></div>
-          <div class="stat-track"><div class="stat-bar" id="cpuBar" style="width: 24%; background: #06b6d4;"></div></div>
+          <div class="stat-meta"><span>ЦП</span><strong id="cpuVal">24%</strong></div>
+          <div class="stat-track"><div class="stat-bar" id="cpuBar" style="width: 24%; background: var(--accent-cyan);"></div></div>
         </div>
-
         <div class="stat-item">
           <div class="stat-meta"><span>ГПУ (RTX 5060)</span><strong id="gpuVal">18%</strong></div>
-          <div class="stat-track"><div class="stat-bar" id="gpuBar" style="width: 18%; background: #84cc16;"></div></div>
+          <div class="stat-track"><div class="stat-bar" id="gpuBar" style="width: 18%; background: var(--lime-core);"></div></div>
         </div>
-
         <div class="stat-item">
           <div class="stat-meta"><span>ОЗУ</span><strong>12.4 / 32 GB</strong></div>
-          <div class="stat-track"><div class="stat-bar" style="width: 38%; background: #a855f7;"></div></div>
+          <div class="stat-track"><div class="stat-bar" style="width: 38%; background: var(--accent-purple);"></div></div>
         </div>
-
         <div class="stat-item">
-          <div class="stat-meta"><span>Диск C:</span><strong>92.5 GB свободно</strong></div>
-          <div class="stat-track"><div class="stat-bar" style="width: 52%; background: #f97316;"></div></div>
+          <div class="stat-meta"><span>Диск C:</span><strong>91.9 GB свободно</strong></div>
+          <div class="stat-track"><div class="stat-bar" style="width: 53%; background: var(--accent-orange);"></div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CENTER: Living Mascot with Tracking Eyes -->
+  <!-- CENTER: Living Mascot -->
   <div class="glass-card center-stage">
-    <div class="halo-ring h-1"></div>
-    <div class="halo-ring h-2"></div>
-
     <div class="mascot-head" id="head" onclick="triggerMascotClick()">
       <div class="eyebrows">
         <div class="brow" id="bL"></div>
@@ -565,18 +448,11 @@
 
       <div class="eyes">
         <div class="eye">
-          <div class="pupil" id="pL">
-            <div class="glare-1"></div>
-            <div class="glare-2"></div>
-          </div>
+          <div class="pupil" id="pL"><div class="glare-1"></div><div class="glare-2"></div></div>
           <div class="eyelid" id="eL"></div>
         </div>
-
         <div class="eye">
-          <div class="pupil" id="pR">
-            <div class="glare-1"></div>
-            <div class="glare-2"></div>
-          </div>
+          <div class="pupil" id="pR"><div class="glare-1"></div><div class="glare-2"></div></div>
           <div class="eyelid" id="eR"></div>
         </div>
       </div>
@@ -586,62 +462,65 @@
 
     <!-- Live Subtitle Box -->
     <div class="subtitle-container">
-      <div class="subtitle-label">ПОМОЩНИК // ЖИВОЙ ОТКЛИК</div>
+      <div class="subtitle-label">КИБЕР // ГОЛОСОВОЙ ОТКЛИК</div>
       <div class="subtitle-body" id="subText">Ну... почти, сэр.</div>
     </div>
 
-    <!-- Quick Action / Emotion Bar -->
-    <div class="emotion-chips">
-      <div class="chip active" onclick="setEmotion('guilty', 'Ну... почти, сэр.')">«Ну почти»</div>
-      <div class="chip" onclick="setEmotion('happy', 'Сэр, громкость выставлена на 80%!')">🔊 Звук 80%</div>
-      <div class="chip" onclick="setEmotion('steam', 'Steam запущен, приятной игры!')">🎮 Steam</div>
-      <div class="chip" onclick="setEmotion('listen', 'Слушаю вас очень внимательно...')">🎙️ Слушаю</div>
+    <!-- Quick Windows Control Chips -->
+    <div class="macro-chips">
+      <div class="chip" onclick="quickSend('сверни всё')">🗕 Свернуть всё</div>
+      <div class="chip" onclick="quickSend('открой браузер')">🌐 Браузер</div>
+      <div class="chip" onclick="quickSend('найди на ютубе музыку')">▶ YouTube</div>
+      <div class="chip" onclick="quickSend('запусти steam')">🎮 Steam</div>
+      <div class="chip" onclick="quickSend('пауза')">⏯ Пауза</div>
     </div>
   </div>
 
-  <!-- RIGHT: Activity Stream & Context Log -->
+  <!-- RIGHT: Stream Log -->
   <div class="glass-card">
     <div class="card-title">
-      <span>ЖУРНАЛ И КОНТЕКСТ</span>
-      <span style="color: #84cc16;">REALTIME</span>
+      <span>ЖУРНАЛ СОБЫТИЙ</span>
+      <span style="color: var(--lime-core);">REALTIME</span>
     </div>
 
     <div class="chat-stream-box" id="streamLog">
       <div class="chat-bubble ai">
-        <div class="bubble-time">11:38:12 • СИСТЕМА</div>
-        <div>Ядро ассистента запущено. Все модули Windows подключены.</div>
-      </div>
-
-      <div class="chat-bubble cmd">
-        <div class="bubble-time">11:38:24 • ГОЛОС</div>
-        <div>Распознано: «Джарвис, сделай звук тише» ➔ WinAPI: 65%</div>
-      </div>
-
-      <div class="chat-bubble ai">
-        <div class="bubble-time">11:38:29 • ОТВЕТ</div>
-        <div>Ну... почти, сэр. Но трек уже переключил!</div>
+        <div class="bubble-time">SYSTEM BOOT</div>
+        <div>Cyber Assistant запущен в оконном режиме Windows. Модули WinAPI активны.</div>
       </div>
     </div>
 
-    <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 14px;">
-      Нажмите <strong>Alt + Space</strong> для быстрого вызова
+    <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 10px;">
+      Хоткей вызова: <strong>Alt + Space</strong>
     </div>
   </div>
 
 </div>
 
-<!-- 3. BOTTOM VOICE CAPSULE -->
+<!-- 4. BOTTOM INPUT CAPSULE -->
 <div class="bottom-station">
   <div class="capsule-bar">
-    <input type="text" class="capsule-input" id="cmdInput" placeholder="Скажите «Джарвис...» или напишите команду..." onkeydown="handleEnter(event)" />
+    <input type="text" class="capsule-input" id="cmdInput" placeholder="Скажите «Кибер...» или напишите команду..." onkeydown="handleEnter(event)" />
     <button class="mic-action-btn" onclick="micClick()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-        <line x1="12" y1="19" x2="12" y2="23"></line>
-        <line x1="8" y1="23" x2="16" y2="23"></line>
-      </svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
     </button>
+  </div>
+</div>
+
+<!-- Modal Update Dialog -->
+<div class="update-modal" id="updateModal">
+  <div class="update-box">
+    <div class="update-title">
+      <span>🚀</span>
+      <span>Найдено обновление!</span>
+    </div>
+    <div class="update-desc" id="updateDesc">
+      Доступна новая версия с вашего GitHub. Установить прямо сейчас?
+    </div>
+    <div class="update-btn-row">
+      <button class="btn-modal-cancel" onclick="closeUpdateModal()">Позже</button>
+      <button class="btn-modal-apply" onclick="applyUpdateNow()">Обновить</button>
+    </div>
   </div>
 </div>
 
@@ -655,7 +534,7 @@
   const m = document.getElementById('m');
   const subText = document.getElementById('subText');
 
-  // Eye Tracking Mouse
+  // Eye tracking mouse
   window.addEventListener('mousemove', (e) => {
     const rect = document.getElementById('head').getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
@@ -684,18 +563,16 @@
   blink();
 
   function setEmotion(type, phrase) {
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
-    subText.innerText = phrase;
+    if (phrase) subText.innerText = phrase;
 
     if (type === 'guilty') {
       bL.style.transform = 'rotate(14deg)';
       bR.style.transform = 'rotate(-14deg)';
       m.style.width = '14px'; m.style.height = '6px';
-    } else if (type === 'happy' || type === 'steam') {
+    } else if (type === 'happy' || type === 'window' || type === 'app' || type === 'browser') {
       bL.style.transform = 'rotate(-10deg) translateY(-3px)';
       bR.style.transform = 'rotate(10deg) translateY(-3px)';
-      m.style.width = '22px'; m.style.height = '12px';
+      m.style.width = '20px'; m.style.height = '11px';
       m.style.borderRadius = '0 0 16px 16px';
     } else if (type === 'listen') {
       bL.style.transform = 'rotate(0deg)';
@@ -703,6 +580,42 @@
       m.style.width = '10px'; m.style.height = '10px';
       m.style.borderRadius = '50%';
     }
+  }
+
+  function sendToPythonBackend(cmdText) {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.execute_command(cmdText).then(function(res) {
+        setEmotion(res.emotion, res.reply);
+        addStreamLog(cmdText, res.reply, res.action);
+      });
+    } else {
+      console.log('Browser simulation:', cmdText);
+    }
+  }
+
+  function addStreamLog(cmd, reply, action) {
+    const log = document.getElementById('streamLog');
+    if (!log) return;
+    const card = document.createElement('div');
+    card.className = 'chat-bubble ' + (action === 'llm' ? 'ai' : 'cmd');
+    const time = new Date().toTimeString().split(' ')[0];
+    card.innerHTML = `<div class="bubble-time">${time} • ${action.toUpperCase()}</div><div>${reply}</div>`;
+    log.prepend(card);
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') {
+      const val = document.getElementById('cmdInput').value.trim();
+      if (val) {
+        quickSend(val);
+        document.getElementById('cmdInput').value = '';
+      }
+    }
+  }
+
+  function quickSend(text) {
+    subText.innerText = `Выполняю: «${text}»...`;
+    sendToPythonBackend(text);
   }
 
   function triggerMascotClick() {
@@ -713,55 +626,61 @@
     setEmotion('listen', 'Слушаю вас... Говорите команду!');
   }
 
-  
-  function sendToPythonBackend(cmdText) {
+  // --- WINDOW CONTROLS & UPDATER ---
+  function windowMinimize() {
+    if (window.pywebview && window.pywebview.api) window.pywebview.api.window_minimize();
+  }
+  function windowToggleMax() {
+    if (window.pywebview && window.pywebview.api) window.pywebview.api.window_toggle_maximize();
+  }
+  function windowClose() {
+    if (window.pywebview && window.pywebview.api) window.pywebview.api.window_close();
+  }
+
+  function checkAppUpdates() {
+    const btn = document.getElementById('btnUpdateCheck');
+    const txt = document.getElementById('updateBtnText');
+    txt.innerText = 'Проверка...';
+
     if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.execute_command(cmdText).then(function(res) {
-        setEmotion(res.emotion, res.reply);
-        addStreamLog(cmdText, res.reply, res.action);
+      window.pywebview.api.check_updates().then(function(res) {
+        if (res.has_update) {
+          btn.classList.add('has-update');
+          txt.innerText = 'Обновление доступно!';
+          document.getElementById('updateDesc').innerText = `Коммит ${res.latest_commit}: ${res.message}`;
+          document.getElementById('updateModal').style.display = 'flex';
+        } else {
+          txt.innerText = 'Актуальная версия';
+          setTimeout(() => { txt.innerText = 'Проверить обновления'; }, 2500);
+        }
+      });
+    } else {
+      setTimeout(() => {
+        txt.innerText = 'Актуальная версия (Git OK)';
+        setTimeout(() => { txt.innerText = 'Проверить обновления'; }, 2000);
+      }, 700);
+    }
+  }
+
+  function closeUpdateModal() {
+    document.getElementById('updateModal').style.display = 'none';
+  }
+
+  function applyUpdateNow() {
+    const txt = document.getElementById('updateBtnText');
+    txt.innerText = 'Обновляюсь...';
+    closeUpdateModal();
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.perform_update().then(function(res) {
+        if (res.success) {
+          alert('Приложение успешно обновлено из GitHub! Перезапустите приложение для применения.');
+        } else {
+          alert('Ошибка обновления: ' + res.error);
+        }
+        txt.innerText = 'Проверить обновления';
       });
     }
   }
-
-  function addStreamLog(cmd, reply, action) {
-    var log = document.getElementById('streamLog');
-    if (!log) return;
-    var card = document.createElement('div');
-    card.className = 'chat-bubble ' + (action === 'llm' ? 'ai' : 'cmd');
-    var time = new Date().toTimeString().split(' ')[0];
-    card.innerHTML = '<div class="bubble-time">' + time + ' • ' + action.toUpperCase() + '</div><div>' + reply + '</div>';
-    log.prepend(card);
-  }
-
-  function handleEnter(e) {
-    if (e.key === 'Enter') {
-      const val = document.getElementById('cmdInput').value.trim();
-      if (val) {
-        setEmotion('happy', `Выполняю команду: «${val}»`); sendToPythonBackend(val);
-        document.getElementById('cmdInput').value = '';
-      }
-    }
-  }
-
-  function seekTrack() {
-    const f = document.getElementById('trackFill');
-    f.style.width = f.style.width === '75%' ? '40%' : '75%';
-  }
-
-  function switchTab(name, el) {
-    document.querySelectorAll('.pill-tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-  }
-
-  // Periodic Telemetry Simulation
-  setInterval(() => {
-    const cpu = 20 + Math.floor(Math.random() * 10);
-    const gpu = 15 + Math.floor(Math.random() * 8);
-    document.getElementById('cpuVal').innerText = cpu + '%';
-    document.getElementById('cpuBar').style.width = cpu + '%';
-    document.getElementById('gpuVal').innerText = gpu + '%';
-    document.getElementById('gpuBar').style.width = gpu + '%';
-  }, 2500);
 </script>
 
 </body>
