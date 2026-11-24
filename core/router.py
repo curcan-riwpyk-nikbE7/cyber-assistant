@@ -10,12 +10,13 @@ from tools.window_manager import (
     focus_window_by_title
 )
 from tools.browser_tools import open_url, search_internet, search_youtube
+from core.llm_engine import LLMEngine
 
 class CommandRouter:
     """Двухуровневый маршрутизатор команд (WinAPI / Браузер / Окна / LLM)."""
     
-    def __init__(self):
-        pass
+    def __init__(self, llm_engine: LLMEngine = None):
+        self.llm = llm_engine if llm_engine else LLMEngine()
 
     def route_command(self, text: str) -> dict:
         t = text.lower().strip()
@@ -127,10 +128,12 @@ class CommandRouter:
             return {"action": "telemetry", "reply": msg, "emotion": "happy"}
 
         # -------------------------------------------------------------
-        # 8. Ответ при отсутствии прямого системного шаблона
+        # 8. Интеллектуальный ответ через LLM (Ollama Local / Gemini)
         # -------------------------------------------------------------
+        llm_res = self.llm.ask(text)
         return {
             "action": "llm",
-            "reply": "Ну... почти, сэр. Отправляю запрос в нейросеть.",
-            "emotion": "guilty"
+            "reply": llm_res.get("reply", "Ну... почти, сэр."),
+            "emotion": llm_res.get("emotion", "happy"),
+            "provider": llm_res.get("provider", "LLM")
         }

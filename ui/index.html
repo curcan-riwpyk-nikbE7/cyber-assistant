@@ -585,9 +585,9 @@
   </div>
 
   <div class="strip-status">
-    <div class="status-pill" title="Нажмите для настроек LLM" onclick="switchMainTab('tabSettings', document.querySelectorAll('.pill-tab')[4])">
-      <div class="dot"></div>
-      <span>LLM: <strong>Ollama Local</strong></span>
+    <div class="status-pill" id="llmStatusPill" title="Нажмите для переключения LLM (Ollama / Gemini)" onclick="cycleLlmProvider()">
+      <div class="dot" id="llmStatusDot"></div>
+      <span id="llmStatusText">LLM: <strong>Ollama (qwen2.5)</strong></span>
     </div>
     <div class="status-pill" title="STT движок">
       <span>🎙️ <strong>Whisper 160ms</strong></span>
@@ -879,15 +879,26 @@
         <div class="settings-group">
           <h3>🧠 Интеллект (LLM Provider)</h3>
           <div class="setting-row">
-            <span class="setting-label">Модель рассуждений:</span>
-            <select class="setting-control">
-              <option selected>Ollama: qwen2.5:7b-instruct (Локально на ПК)</option>
-              <option>Ollama: llama3.1:8b (Локально)</option>
-              <option>Google Gemini 2.5 Flash API (Облачный мгновенный)</option>
+            <span class="setting-label">Активный ИИ-провайдер:</span>
+            <select class="setting-control" id="llmProviderSelect" onchange="onLlmConfigChange()">
+              <option value="ollama" selected>Ollama (Локально на GPU RTX 5060 • 100% Приватно)</option>
+              <option value="gemini">Google Gemini 2.5 Flash (Облачный • Мгновенный)</option>
             </select>
           </div>
           <div class="setting-row">
-            <span class="setting-label">Системная роль:</span>
+            <span class="setting-label">Локальная модель Ollama:</span>
+            <select class="setting-control" id="llmModelSelect" onchange="onLlmConfigChange()">
+              <option value="qwen2.5:3b" selected>qwen2.5:3b (Идеальный баланс скорости и ума)</option>
+              <option value="llama3.2:1b">llama3.2:1b (Ультралегкая • 350+ токенов/сек)</option>
+            </select>
+          </div>
+          <div class="setting-row" id="geminiKeyRow" style="display: none;">
+            <span class="setting-label">Google Gemini API Key:</span>
+            <input type="password" class="setting-control" id="geminiApiKeyInput" placeholder="Вставьте ваш AIzaSy..." onchange="onLlmConfigChange()" />
+            <span class="setting-sub">Ключ сохраняется локально и используется только для запросов к Google AI</span>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Системный характер:</span>
             <input type="text" class="setting-control" value="Ты — Кибер, верный цифровой спутник KINGSAID." />
           </div>
         </div>
@@ -1210,6 +1221,88 @@
           btn.className = 'btn-toggle-plugin off';
           btn.innerText = 'Отключен';
         }
+      }
+    });
+  }
+
+  // --- LLM PROVIDER SWITCHER (Astra Style Status Pill) ---
+  let activeLlmProvider = 'ollama';
+  let activeLlmModel = 'qwen2.5:3b';
+
+  function initLlmConfig() {
+    fetch('/api/get_llm_config', {method: 'POST'})
+    .then(r => r.json())
+    .then(cfg => {
+      activeLlmProvider = cfg.provider || 'ollama';
+      activeLlmModel = cfg.model || 'qwen2.5:3b';
+      updateLlmUI(activeLlmProvider, activeLlmModel);
+    })
+    .catch(() => {});
+  }
+  initLlmConfig();
+
+  function updateLlmUI(provider, model) {
+    const pillText = document.getElementById('llmStatusText');
+    const pillDot = document.getElementById('llmStatusDot');
+    const providerSelect = document.getElementById('llmProviderSelect');
+    const modelSelect = document.getElementById('llmModelSelect');
+    const keyRow = document.getElementById('geminiKeyRow');
+
+    if (providerSelect) providerSelect.value = provider;
+    if (modelSelect) modelSelect.value = model;
+
+    if (provider === 'gemini') {
+      if (pillText) pillText.innerHTML = 'LLM: <strong>Gemini Cloud</strong>';
+      if (pillDot) { pillDot.style.background = '#06b6d4'; pillDot.style.boxShadow = '0 0 6px #06b6d4'; }
+      if (keyRow) keyRow.style.display = 'flex';
+    } else {
+      const shortName = model.replace(':3b', '').replace(':1b', '');
+      if (pillText) pillText.innerHTML = `LLM: <strong>Ollama (${shortName})</strong>`;
+      if (pillDot) { pillDot.style.background = '#84cc16'; pillDot.style.boxShadow = '0 0 6px #84cc16'; }
+      if (keyRow) keyRow.style.display = 'none';
+    }
+  }
+
+  function cycleLlmProvider() {
+    if (activeLlmProvider === 'ollama') {
+      activeLlmProvider = 'gemini';
+      activeLlmModel = 'gemini-2.5-flash';
+    } else {
+      activeLlmProvider = 'ollama';
+      activeLlmModel = 'qwen2.5:3b';
+    }
+    syncLlmToServer();
+  }
+
+  function onLlmConfigChange() {
+    const provSel = document.getElementById('llmProviderSelect');
+    const modSel = document.getElementById('llmModelSelect');
+    const keyInp = document.getElementById('geminiApiKeyInput');
+
+    activeLlmProvider = provSel.value;
+    activeLlmModel = activeLlmProvider === 'gemini' ? 'gemini-2.5-flash' : modSel.value;
+    syncLlmToServer(keyInp ? keyInp.value.trim() : null);
+  }
+
+  function syncLlmToServer(keyVal) {
+    const bodyData = {
+      provider: activeLlmProvider,
+      model: activeLlmModel
+    };
+    if (keyVal !== null && keyVal !== undefined) {
+      bodyData.gemini_key = keyVal;
+    }
+
+    fetch('/api/set_llm_config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(bodyData)
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        updateLlmUI(res.provider, res.model);
+        addStreamLog('Провайдер интеллекта переключен', `Активна модель: ${res.provider.toUpperCase()} [${res.model}]`, 'SYSTEM');
       }
     });
   }

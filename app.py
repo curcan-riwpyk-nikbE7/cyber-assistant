@@ -10,11 +10,13 @@ from urllib.parse import urlparse
 from core.router import CommandRouter
 from core.updater import AppUpdater
 from core.plugins import PluginManager
+from core.llm_engine import LLMEngine
 from tools.telemetry import get_system_telemetry
 
 PORT = 54321
 UI_DIR = os.path.join(os.path.dirname(__file__), "ui")
-router = CommandRouter()
+llm_engine = LLMEngine(provider="ollama", model="qwen2.5:3b")
+router = CommandRouter(llm_engine=llm_engine)
 updater = AppUpdater(os.path.dirname(__file__))
 plugin_manager = PluginManager()
 
@@ -55,6 +57,28 @@ class AppHandler(http.server.SimpleHTTPRequestHandler):
 
         elif parsed.path == "/api/perform_update":
             response_data = updater.apply_update()
+
+        elif parsed.path == "/api/get_llm_config":
+            response_data = {
+                "provider": llm_engine.provider,
+                "model": llm_engine.model,
+                "gemini_key_set": bool(llm_engine.gemini_key)
+            }
+
+        elif parsed.path == "/api/set_llm_config":
+            try:
+                body = json.loads(post_data)
+                provider = body.get("provider", "ollama")
+                model = body.get("model", "qwen2.5:3b")
+                gemini_key = body.get("gemini_key")
+                llm_engine.set_provider(provider, model, gemini_key)
+                response_data = {
+                    "success": True,
+                    "provider": llm_engine.provider,
+                    "model": llm_engine.model
+                }
+            except Exception as e:
+                response_data = {"success": False, "error": str(e)}
 
         self.send_response(200)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
