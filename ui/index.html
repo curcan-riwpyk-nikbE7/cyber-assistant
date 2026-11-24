@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CYBER Assistant // KINGSAID OS</title>
-<script src="qwebchannel.js"></script>
+
 <style>
   :root {
     --bg-main: #06080d;
@@ -822,153 +822,91 @@
   }
 
   // --- QT6 WEBCHANNEL BRIDGE ---
-  var pyBridge = null;
-  if (typeof QWebChannel !== 'undefined') {
-    new QWebChannel(qt.webChannelTransport, function (channel) {
-      pyBridge = channel.objects.pyBridge;
-      loadPluginsUI();
-    });
+    function sendToPythonBackend(cmdText) {
+    fetch('/api/execute', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({command: cmdText})
+    })
+    .then(r => r.json())
+    .then(res => {
+      setEmotion(res.emotion, res.reply);
+      addStreamLog(cmdText, res.reply, res.action);
+    })
+    .catch(err => console.error(err));
   }
 
-  function sendToPythonBackend(cmdText) {
-    if (pyBridge) {
-      pyBridge.executeCommand(cmdText, function(response) {
-        var res = JSON.parse(response);
-        setEmotion(res.emotion, res.reply);
-        addStreamLog(cmdText, res.reply, res.action);
-      });
-    }
-  }
-
-  function addStreamLog(cmd, reply, action) {
-    var log = document.getElementById('streamLog');
-    if (!log) return;
-    var card = document.createElement('div');
-    card.className = 'chat-bubble ' + (action === 'llm' ? 'ai' : 'cmd');
-    var time = new Date().toTimeString().split(' ')[0];
-    card.innerHTML = '<div class="bubble-time">' + time + ' • ' + action.toUpperCase() + '</div><div>' + reply + '</div>';
-    log.prepend(card);
-  }
-
-  function handleEnter(e) {
-    if (e.key === 'Enter') {
-      var val = document.getElementById('cmdInput').value.trim();
-      if (val) {
-        quickSend(val);
-        document.getElementById('cmdInput').value = '';
-      }
-    }
-  }
-
-  function quickSend(text) {
-    if (subText) subText.innerText = 'Выполняю: «' + text + '»...';
-    sendToPythonBackend(text);
-  }
-
-  function triggerMascotClick() { setEmotion('happy', 'Ой, щекотно, сэр!'); }
-  function micClick() { setEmotion('listen', 'Слушаю вас... Говорите команду!'); }
-
-  function windowMinimize() { if (pyBridge) pyBridge.minimizeWindow(); }
-  function windowToggleMax() { if (pyBridge) pyBridge.toggleMaximizeWindow(); }
-  function windowClose() { if (pyBridge) pyBridge.closeWindow(); }
+  function windowMinimize() { window.blur(); }
+  function windowToggleMax() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
+  function windowClose() { window.close(); }
 
   function checkAppUpdates() {
     var btn = document.getElementById('btnUpdateCheck');
     var txt = document.getElementById('updateBtnText');
     txt.innerText = 'Проверка...';
-    if (pyBridge) {
-      pyBridge.checkUpdates(function(response) {
-        var res = JSON.parse(response);
-        if (res.has_update) {
-          btn.classList.add('has-update');
-          txt.innerText = 'Обновление доступно!';
-          document.getElementById('updateDesc').innerText = 'Коммит ' + res.latest_commit + ': ' + res.message;
-          document.getElementById('updateModal').style.display = 'flex';
-        } else {
-          txt.innerText = 'Актуальная версия';
-          setTimeout(function() { txt.innerText = 'Проверить обновления'; }, 2500);
-        }
-      });
-    }
-  }
 
-  function closeUpdateModal() { document.getElementById('updateModal').style.display = 'none'; }
+    fetch('/api/check_updates', {method: 'POST'})
+    .then(r => r.json())
+    .then(res => {
+      if (res.has_update) {
+        btn.classList.add('has-update');
+        txt.innerText = 'Обновление доступно!';
+        document.getElementById('updateDesc').innerText = 'Коммит ' + res.latest_commit + ': ' + res.message;
+        document.getElementById('updateModal').style.display = 'flex';
+      } else {
+        txt.innerText = 'Актуальная версия';
+        setTimeout(function() { txt.innerText = 'Проверить обновления'; }, 2500);
+      }
+    })
+    .catch(() => { txt.innerText = 'Ошибка'; });
+  }
 
   function applyUpdateNow() {
     var txt = document.getElementById('updateBtnText');
     txt.innerText = 'Обновляюсь...';
     closeUpdateModal();
-    if (pyBridge) {
-      pyBridge.performUpdate(function(response) {
-        var res = JSON.parse(response);
-        if (res.success) {
-          alert('Приложение успешно обновлено из GitHub! Перезапустите приложение.');
-        } else {
-          alert('Ошибка обновления: ' + res.error);
-        }
-        txt.innerText = 'Проверить обновления';
-      });
-    }
+    fetch('/api/perform_update', {method: 'POST'})
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        alert('Приложение успешно обновлено! Перезапустите окно.');
+      } else {
+        alert('Ошибка обновления: ' + res.error);
+      }
+      txt.innerText = 'Проверить обновления';
+    });
   }
 
-  // Загрузка и рендер плагинов из Python PluginManager
   function loadPluginsUI() {
     var container = document.getElementById('pluginCatalog');
     if (!container) return;
 
-    if (pyBridge) {
-      pyBridge.getPlugins(function(resStr) {
-        var list = JSON.parse(resStr);
-        renderPluginsList(list, container);
-      });
-    } else {
-      // Демо-данные для браузера
-      var demo = [
-        {id:'browser_control', name:'Web Browser & YouTube Control', author:'Cyber Core', desc:'Голосовой поиск в Google/Яндекс, открытие ссылок, запуск YouTube и поиск видео.', icon:'🌐', enabled:true},
-        {id:'window_manager', name:'Windows Desktop & Window Manager', author:'WinAPI Tools', desc:'Сворачивание всех окон (Win+D), закрытие программ, переключение между активными окнами.', icon:'🗔', enabled:true},
-        {id:'media_sync', name:'Spotify & Media Controls', author:'Audio Team', desc:'Управление громкостью, системный Mute, пауза, плей и переключение треков.', icon:'🎵', enabled:true},
-        {id:'telegram_bridge', name:'Telegram Remote Bridge', author:'Community', desc:'Удаленное управление домашним компьютером через Telegram-бота со смартфона.', icon:'✈️', enabled:false},
-        {id:'obs_streamer', name:'OBS Studio & Stream Deck', author:'Stream Tools', desc:'Голосовое переключение сцен в OBS, включение микрофона и запуск трансляции.', icon:'🎙️', enabled:false},
-        {id:'game_booster', name:'Steam & Game Launcher', author:'Gaming Mode', desc:'Автоматический запуск игр, очистка памяти и включение игрового режима.', icon:'🎮', enabled:true}
-      ];
-      renderPluginsList(demo, container);
-    }
-  }
-
-  function renderPluginsList(list, container) {
-    container.innerHTML = '';
-    list.forEach(function(p) {
-      var card = document.createElement('div');
-      card.className = 'plugin-card';
-      var stateClass = p.enabled ? '' : 'off';
-      var stateText = p.enabled ? 'Включен' : 'Отключен';
-
-      card.innerHTML = 
-        '<div class="plugin-head">' +
-          '<div class="plugin-icon-box">' + p.icon + '</div>' +
-          '<div class="plugin-info">' +
-            '<h3>' + p.name + '</h3>' +
-            '<p>by ' + p.author + '</p>' +
-          '</div>' +
-        '</div>' +
-        '<div class="plugin-desc">' + p.desc + '</div>' +
-        '<div class="plugin-footer">' +
-          '<span style="font-size: 11px; color: rgba(255,255,255,0.4);">Модуль активен</span>' +
-          '<button class="btn-toggle-plugin ' + stateClass + '" onclick="togglePluginClick(\'' + p.id + '\', this)">' + stateText + '</button>' +
-        '</div>';
-      container.appendChild(card);
-    });
+    fetch('/api/plugins', {method: 'POST'})
+    .then(r => r.json())
+    .then(list => renderPluginsList(list, container))
+    .catch(() => {});
   }
 
   function togglePluginClick(pluginId, btn) {
-    if (pyBridge) {
-      pyBridge.togglePlugin(pluginId, function(resStr) {
-        var res = JSON.parse(resStr);
-        if (res.success) {
-          if (res.enabled) {
-            btn.className = 'btn-toggle-plugin';
-            btn.innerText = 'Включен';
-          } else {
+    fetch('/api/toggle_plugin', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({plugin_id: pluginId})
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        if (res.enabled) {
+          btn.className = 'btn-toggle-plugin';
+          btn.innerText = 'Включен';
+        } else {
+          btn.className = 'btn-toggle-plugin off';
+          btn.innerText = 'Отключен';
+        }
+      }
+    });
+  }
+ else {
             btn.className = 'btn-toggle-plugin off';
             btn.innerText = 'Отключен';
           }

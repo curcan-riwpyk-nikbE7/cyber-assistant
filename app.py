@@ -1,119 +1,108 @@
 import os
 import sys
 import json
-from PyQt6.QtCore import QUrl, pyqtSlot, QObject, Qt, QPoint
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebChannel import QWebChannel
+import threading
+import subprocess
+import http.server
+import socketserver
+from urllib.parse import parse_qs, urlparse
 
 from core.router import CommandRouter
 from core.updater import AppUpdater
 from core.plugins import PluginManager
 from tools.telemetry import get_system_telemetry
 
-class WebBridge(QObject):
-    """Мост связи между JavaScript в интерфейсе и Python."""
-    def __init__(self, main_window):
-        super().__init__()
-        self.win = main_window
-        self.router = CommandRouter()
-        self.updater = AppUpdater(os.path.dirname(__file__))
-        self.plugin_manager = PluginManager()
+PORT = 54321
+UI_DIR = os.path.join(os.path.dirname(__file__), "ui")
+router = CommandRouter()
+updater = AppUpdater(os.path.dirname(__file__))
+plugin_manager = PluginManager()
 
-    @pyqtSlot(str, result=str)
-    def executeCommand(self, cmd_text):
-        res = self.router.route_command(cmd_text)
-        return json.dumps(res)
+class AppHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=UI_DIR, **kwargs)
 
-    @pyqtSlot(result=str)
-    def getTelemetry(self):
-        return json.dumps(get_system_telemetry())
+    def do_POST(self):
+        # API endpoints
+        parsed = urlparse(self.path)
+        content_length = int(self.headers.get('Content-Length', 0))
+        post_data = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else ""
+        
+        response_data = {}
 
-    @pyqtSlot(result=str)
-    def checkUpdates(self):
-        return json.dumps(self.updater.check_for_updates())
+        if parsed.path == "/api/execute":
+            try:
+                body = json.loads(post_data)
+                cmd = body.get("command", "")
+                response_data = router.route_command(cmd)
+            except Exception as e:
+                response_data = {"reply": f"Ошибка: {e}", "emotion": "guilty", "action": "error"}
 
-    @pyqtSlot(result=str)
-    def performUpdate(self):
-        return json.dumps(self.updater.apply_update())
+        elif parsed.path == "/api/telemetry":
+            response_data = get_system_telemetry()
 
-    @pyqtSlot(result=str)
-    def getPlugins(self):
-        return json.dumps(self.plugin_manager.get_plugins_list())
+        elif parsed.path == "/api/plugins":
+            response_data = plugin_manager.get_plugins_list()
 
-    @pyqtSlot(str, result=str)
-    def togglePlugin(self, plugin_id):
-        res = self.plugin_manager.toggle_plugin(plugin_id)
-        return json.dumps(res)
+        elif parsed.path == "/api/toggle_plugin":
+            try:
+                body = json.loads(post_data)
+                pid = body.get("plugin_id", "")
+                response_data = plugin_manager.toggle_plugin(pid)
+            except Exception as e:
+                response_data = {"success": False, "error": str(e)}
 
-    @pyqtSlot()
-    def minimizeWindow(self):
-        self.win.showMinimized()
+        elif parsed.path == "/api/check_updates":
+            response_data = updater.check_for_updates()
 
-    @pyqtSlot()
-    def toggleMaximizeWindow(self):
-        if self.win.isMaximized():
-            self.win.showNormal()
-        else:
-            self.win.showMaximized()
+        elif parsed.path == "/api/perform_update":
+            response_data = updater.apply_update()
 
-    @pyqtSlot()
-    def closeWindow(self):
-        self.win.close()
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps(response_data, ensure_ascii=False).encode('utf-8'))
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
 
-class CyberMainWindow(QMainWindow):
-    """Главное нативное окно приложения Кибер на движке Qt6 WebEngine."""
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Cyber Assistant // KINGSAID OS")
-        self.resize(1180, 780)
-        self.setMinimumSize(960, 640)
+    def log_message(self, format, *args):
+        # Отключаем спам в консоль
+        pass
 
-        # Безрамочное стильное окно
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, False)
+def run_server():
+    socketserver.TCPServer.allow_reuse_address = True
+    with socketserver.TCPServer(("127.0.0.1", PORT), AppHandler) as httpd:
+        httpd.serve_forever()
 
-        # Веб-движок Chromium
-        self.browser = QWebEngineView()
-        self.browser.page().setBackgroundColor(Qt.GlobalColor.transparent)
+def start_desktop_app():
+    # 1. Запуск легковесного локального веб-сервера API в отдельном потоке
+    t = threading.Thread(target=run_server, daemon=True)
+    t.start()
 
-        # Канал связи
-        self.channel = QWebChannel()
-        self.bridge = WebBridge(self)
-        self.channel.registerObject("pyBridge", self.bridge)
-        self.browser.page().setWebChannel(self.channel)
+    # 2. Запуск нативного окна Microsoft Edge в режиме App (PWA)
+    # Этот режим не блокируется политиками Smart App Control и дает 100% стабильность
+    edge_paths = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+    ]
+    edge_exe = next((p for p in edge_paths if os.path.exists(p)), "msedge.exe")
 
-        # Загрузка локального UI
-        ui_path = os.path.join(os.path.dirname(__file__), "ui", "index.html")
-        self.browser.load(QUrl.fromLocalFile(os.path.abspath(ui_path)))
+    app_url = f"http://127.0.0.1:{PORT}/index.html"
+    cmd = [
+        edge_exe,
+        f"--app={app_url}",
+        "--window-size=1180,780",
+        "--disable-extensions",
+        "--disable-features=Translate"
+    ]
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.browser)
-
-        central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
-
-        self.drag_position = QPoint()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton and event.pos().y() < 50:
-            self.drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.MouseButton.LeftButton and event.pos().y() < 50:
-            self.move(event.globalPosition().toPoint() - self.drag_position)
-            event.accept()
-
-
-def run_app():
-    app = QApplication(sys.argv)
-    window = CyberMainWindow()
-    window.show()
-    sys.exit(app.exec())
+    subprocess.Popen(cmd)
 
 if __name__ == "__main__":
-    run_app()
+    start_desktop_app()
