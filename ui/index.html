@@ -3,933 +3,684 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CYBER Assistant // KINGSAID OS</title>
-
+<title>Кибер — Твой персональный ИИ</title>
 <style>
   :root {
-    --bg-main: #06080d;
-    --card-bg: rgba(16, 20, 29, 0.75);
+    --bg-dark: #090b10;
+    --card-bg: rgba(18, 22, 33, 0.75);
     --card-border: rgba(255, 255, 255, 0.08);
-    --lime-core: #84cc16;
-    --lime-glow: rgba(163, 230, 53, 0.4);
-    --accent-orange: #f97316;
-    --accent-cyan: #06b6d4;
-    --accent-purple: #8b5cf6;
-    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+    --card-hover: rgba(255, 255, 255, 0.12);
+    --lime: #ccff00;
+    --lime-dim: rgba(204, 255, 0, 0.15);
+    --cyan: #06b6d4;
+    --cyan-dim: rgba(6, 182, 212, 0.15);
+    --purple: #a855f7;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "SF Mono", Consolas, "JetBrains Mono", monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
   body {
-    background: var(--bg-main);
-    color: #f8fafc;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
     font-family: var(--font);
     height: 100vh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background-image: 
+      radial-gradient(circle at 50% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 60%),
+      radial-gradient(circle at 80% 80%, rgba(204, 255, 0, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
   }
 
-  /* 1. NATIVE APPLICATION TITLEBAR */
-  .app-titlebar {
-    height: 44px;
-    background: rgba(10, 13, 19, 0.95);
-    border-bottom: 1px solid var(--card-border);
+  /* 1. TOP BAR */
+  .top-bar {
+    height: 52px;
+    padding: 0 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    z-index: 50;
+    border-bottom: 1px solid var(--card-border);
+    background: rgba(9, 11, 16, 0.85);
+    backdrop-filter: blur(20px);
     -webkit-app-region: drag;
   }
 
-  .titlebar-left {
+  .nav-pills {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-  .app-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: var(--lime-core);
-    box-shadow: 0 0 12px var(--lime-core);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #000;
-    font-weight: 900;
-    font-size: 12px;
-  }
-  .app-version {
-    font-size: 10px;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: rgba(255, 255, 255, 0.6);
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px;
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    -webkit-app-region: no-drag;
   }
 
-  .titlebar-actions {
+  .nav-pill {
+    padding: 5px 14px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-pill:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
+  .nav-pill.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  .status-badges {
     display: flex;
     align-items: center;
     gap: 8px;
     -webkit-app-region: no-drag;
   }
 
-  .btn-update {
-    background: rgba(6, 182, 212, 0.15);
-    border: 1px solid rgba(6, 182, 212, 0.35);
-    color: var(--accent-cyan);
+  .badge-pill {
     padding: 4px 10px;
-    border-radius: 6px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
     font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     gap: 6px;
+    cursor: pointer;
     transition: all 0.2s;
   }
-  .btn-update:hover { background: rgba(6, 182, 212, 0.25); border-color: var(--accent-cyan); }
-  .btn-update.has-update {
-    background: rgba(132, 204, 22, 0.2);
-    border-color: var(--lime-core);
-    color: var(--lime-core);
-    animation: pulseUpdate 1.5s infinite;
+  .badge-pill:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
+  .badge-pill.active-engine {
+    background: rgba(6, 182, 212, 0.12);
+    border-color: rgba(6, 182, 212, 0.3);
+    color: var(--cyan);
   }
-  @keyframes pulseUpdate {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(132, 204, 22, 0); }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #10b981;
+    box-shadow: 0 0 8px #10b981;
   }
 
-  .win-controls { display: flex; align-items: center; gap: 4px; }
-  .win-btn {
-    width: 28px;
-    height: 28px;
+  .win-actions {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 12px;
+    gap: 4px;
+    -webkit-app-region: no-drag;
+  }
+  .win-btn {
+    width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; color: var(--text-muted); cursor: pointer;
     transition: all 0.15s;
   }
-  .win-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+  .win-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
   .win-btn.close:hover { background: #ef4444; color: #fff; }
 
-  /* 2. SUB-BAR WITH STATUS PILLS (Astra style) */
-  .nav-strip {
-    height: 48px;
-    background: rgba(8, 11, 16, 0.85);
-    border-bottom: 1px solid var(--card-border);
+  /* 2. MAIN CONTAINER */
+  .workspace {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    padding-bottom: 90px;
+  }
+
+  .view-tab { display: none; height: 100%; padding: 24px 32px; }
+  .view-tab.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HERO BANNER & GREETING */
+  .hero-greeting {
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 24px;
+  }
+  .hero-greeting h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #ffffff 60%, rgba(255,255,255,0.6));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-greeting p { font-size: 13px; color: var(--text-muted); }
+
+  /* 3. CENTER CYBER ORB (Jasper / Glocal Interactive Plasma Sphere) */
+  .orb-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto 28px auto;
+    position: relative;
+    cursor: pointer;
+    width: 180px;
+    height: 180px;
+  }
+
+  #cyberOrbCanvas {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 25px rgba(6, 182, 212, 0.45));
+    transition: filter 0.3s ease;
+  }
+  .orb-container:hover #cyberOrbCanvas {
+    filter: drop-shadow(0 0 35px rgba(204, 255, 0, 0.55));
+  }
+
+  .orb-status-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 10px;
+    text-align: center;
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .orb-status-text span { color: var(--lime); }
+
+  /* QUICK ACTIONS / SUGGESTIONS */
+  .quick-chips {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .chip {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    padding: 7px 14px;
+    border-radius: 18px;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255,255,255,0.2);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  /* SYSTEM METRICS (WIDGETS) */
+  .widgets-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .widget-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 16px;
+    backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .widget-card:hover { border-color: rgba(255, 255, 255, 0.16); }
+  .widget-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    z-index: 45;
-  }
-  .nav-pills { display: flex; align-items: center; gap: 6px; }
-  .pill-tab {
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .pill-tab:hover { color: #fff; background: rgba(255,255,255,0.06); }
-  .pill-tab.active {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    font-size: 11px;
     font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .widget-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    font-family: var(--mono);
+  }
+  .widget-progress-bg {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .widget-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--lime));
+    border-radius: 2px;
+    transition: width 0.4s ease;
   }
 
-  .strip-status {
+  /* 4. CHAT HISTORY STREAM */
+  .stream-box {
+    max-width: 820px;
+    margin: 24px auto 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .bubble {
+    padding: 12px 18px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 85%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  .bubble.user {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .bubble.assistant {
+    align-self: flex-start;
+    background: rgba(18, 22, 33, 0.85);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    color: var(--text-main);
+    border-bottom-left-radius: 4px;
+  }
+  .bubble-time {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-family: var(--mono);
+  }
+
+  /* 5. FLOATING INPUT CAPSULE (Astra / Jasper Style) */
+  .bottom-dock {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(720px, 92vw);
+    z-index: 50;
+  }
+  .capsule-box {
+    background: rgba(15, 19, 28, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 28px;
+    padding: 6px 10px 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05);
+    transition: all 0.25s;
+  }
+  .capsule-box:focus-within {
+    border-color: rgba(6, 182, 212, 0.5);
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), 0 0 25px rgba(6, 182, 212, 0.25);
+  }
+  .capsule-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .capsule-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+  .capsule-actions {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-
-  /* Astra Status Pills */
-  .status-pill {
+  .capsule-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
     display: flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--card-border);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .status-pill:hover {
-    background: rgba(132, 204, 22, 0.12);
-    border-color: var(--lime-core);
+  .capsule-btn:hover { background: rgba(255, 255, 255, 0.15); }
+  .capsule-btn.primary {
+    background: linear-gradient(135deg, var(--lime), #84cc16);
+    color: #000;
   }
-  .status-pill .dot {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--lime-core);
-    box-shadow: 0 0 6px var(--lime-core);
-  }
-
-  /* 3. WORKSPACE CONTAINER (Tab Switcher) */
-  .view-wrapper {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-    padding-bottom: 74px;
-  }
-  .tab-view {
-    position: absolute;
-    inset: 0;
-    padding: 18px 24px 80px 24px;
-    display: none;
-    overflow-y: auto;
-  }
-  .tab-view.active { display: flex; }
-
-  /* TAB 1: ГЛАВНЫЙ ЭКРАН (3 Колонки) */
-  .workspace-grid {
-    display: grid;
-    grid-template-columns: 310px 1fr 330px;
-    gap: 20px;
-    width: 100%;
-    height: 100%;
+  .capsule-btn.primary:hover {
+    box-shadow: 0 0 15px rgba(204, 255, 0, 0.4);
+    transform: scale(1.05);
   }
 
-  .glass-card {
+  /* OTHER TABS STYLING */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 960px; margin: 0 auto; }
+  .card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: 18px;
-    backdrop-filter: blur(35px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.08);
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    position: relative;
-  }
-  .card-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-
-  /* Media Hub */
-  .media-deck {
-    background: rgba(10, 13, 19, 0.7);
-    border: 1px solid var(--card-border);
-    border-radius: 14px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .media-top { display: flex; align-items: center; gap: 12px; }
-  .media-cover {
-    width: 40px; height: 40px; border-radius: 8px;
-    background: linear-gradient(135deg, #f97316, #ef4444);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
-  }
-  .media-meta h4 { font-size: 12px; font-weight: 600; }
-  .media-meta p { font-size: 10px; color: rgba(255,255,255,0.5); }
-  .media-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; }
-  .media-fill { width: 45%; height: 100%; background: var(--lime-core); border-radius: 2px; }
-
-  /* Hardware Monitoring */
-  .stat-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-  .stat-item { display: flex; flex-direction: column; gap: 4px; }
-  .stat-meta { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.7); }
-  .stat-track { width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
-  .stat-bar { height: 100%; border-radius: 3px; }
-
-  /* Center Stage */
-  .center-stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    text-align: center;
-  }
-
-  .avatar-switcher-bar {
-    display: flex;
-    gap: 6px;
-    background: rgba(10, 13, 19, 0.7);
-    border: 1px solid var(--card-border);
-    padding: 3px;
-    border-radius: 20px;
-    margin-bottom: 8px;
-  }
-  .avatar-switch-btn {
-    padding: 3px 12px;
-    border-radius: 16px;
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.6);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .avatar-switch-btn.active {
-    background: var(--lime-core);
-    color: #000;
-  }
-
-  /* 1. Живой Маскот Кибера */
-  .mascot-head {
-    position: relative;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 35%, 
-      #d9f99d 0%, 
-      #a3e635 35%, 
-      #65a30d 75%, 
-      #365314 100%
-    );
-    box-shadow: 
-      0 0 45px var(--lime-glow),
-      0 0 80px rgba(132, 204, 22, 0.25),
-      inset 0 0 25px rgba(255, 255, 255, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    animation: floatBreathe 4s ease-in-out infinite alternate;
-    transition: transform 0.2s;
-  }
-  .mascot-head:hover { transform: scale(1.05); }
-
-  .eyebrows { position: absolute; top: 26px; display: flex; gap: 32px; }
-  .brow { width: 18px; height: 4px; background: rgba(255, 255, 255, 0.7); border-radius: 4px; transform: rotate(12deg); transition: transform 0.3s; }
-  .brow.r { transform: rotate(-12deg); }
-
-  .eyes { position: absolute; top: 40px; display: flex; gap: 16px; }
-  .eye { width: 38px; height: 54px; background: #fff; border-radius: 50%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .pupil { width: 26px; height: 36px; background: #142207; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; transition: transform 0.05s ease-out; }
-  .glare-1 { position: absolute; top: 5px; left: 5px; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
-  .glare-2 { position: absolute; bottom: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; }
-  .eyelid { position: absolute; inset: 0; background: #84cc16; border-radius: 50%; transform: translateY(-100%); transition: transform 0.12s; }
-  .mouth { position: absolute; bottom: 28px; width: 13px; height: 7px; background: #1a3307; border-radius: 0 0 14px 14px; transition: all 0.2s; }
-
-  /* 2. Cyber Orb (Стиль Glocal / Jasper) */
-  .cyber-orb-container {
-    display: none;
-    width: 170px;
-    height: 170px;
-    position: relative;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .orb-canvas {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-  }
-
-  .subtitle-container { margin-top: 10px; }
-  .subtitle-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-bottom: 4px; }
-  .subtitle-body { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; color: #fff; min-height: 26px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-
-  .macro-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
-  .chip {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--card-border);
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    cursor: pointer;
-    color: rgba(255,255,255,0.7);
-    transition: all 0.2s;
-  }
-  .chip:hover { background: rgba(132, 204, 22, 0.2); border-color: var(--lime-core); color: #fff; }
-  .chip.highlight {
-    background: rgba(6, 182, 212, 0.15);
-    border-color: rgba(6, 182, 212, 0.35);
-    color: var(--accent-cyan);
-  }
-  .chip.highlight:hover {
-    background: rgba(6, 182, 212, 0.3);
-    border-color: var(--accent-cyan);
-    color: #fff;
-  }
-
-  /* Activity Log */
-  .chat-stream-box { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-  .chat-bubble { background: rgba(10, 13, 20, 0.7); border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 12px; font-size: 12px; line-height: 1.4; }
-  .chat-bubble.ai { border-left: 3px solid var(--lime-core); }
-  .chat-bubble.cmd { border-left: 3px solid var(--accent-cyan); }
-  .bubble-time { font-size: 9px; color: rgba(255,255,255,0.35); font-family: var(--font-mono); margin-bottom: 4px; }
-
-  /* TAB 2: ПЛАГИНЫ (Astra Plugin Store) */
-  .plugin-catalog {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
-    width: 100%;
-  }
-  .plugin-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  }
-  .plugin-head { display: flex; align-items: center; gap: 12px; }
-  .plugin-icon-box {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: rgba(255,255,255,0.06); border: 1px solid var(--card-border);
-    display: flex; align-items: center; justify-content: center; font-size: 20px;
-  }
-  .plugin-info h3 { font-size: 14px; font-weight: 600; color: #fff; }
-  .plugin-info p { font-size: 11px; color: rgba(255,255,255,0.45); }
-  .plugin-desc { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; flex: 1; }
-  .plugin-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-  .btn-toggle-plugin {
-    background: rgba(132, 204, 22, 0.2);
-    border: 1px solid var(--lime-core);
-    color: var(--lime-core);
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-toggle-plugin.off {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.5);
-  }
-
-  /* TAB 3: СЦЕНАРИИ И МАКРОСЫ (Astra Node Scenarios) */
-  .scenarios-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
-    width: 100%;
-  }
-  .scenario-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .scenario-card:hover { border-color: rgba(255,255,255,0.2); }
-  .scenario-head { display: flex; align-items: center; justify-content: space-between; }
-  .scenario-badge {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: rgba(132, 204, 22, 0.15);
-    color: var(--lime-core);
-    font-weight: 600;
-  }
-  .scenario-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 12px;
-    color: rgba(255,255,255,0.65);
-  }
-  .scenario-step { display: flex; align-items: center; gap: 8px; }
-  .scenario-step span { width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; }
-  .btn-run-scenario {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid var(--card-border);
-    color: #fff;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .btn-run-scenario:hover {
-    background: var(--lime-core);
-    color: #000;
-    border-color: var(--lime-core);
-  }
-
-  /* TAB 4: НАСТРОЙКИ (Astra Style Settings) */
-  .settings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
-    width: 100%;
-  }
-  .settings-group {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 18px;
+    padding: 22px;
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
-  .settings-group h3 { font-size: 13px; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1px; }
-  .setting-row { display: flex; flex-direction: column; gap: 6px; }
-  .setting-label { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
-  .setting-sub { font-size: 10px; color: rgba(255,255,255,0.4); }
-  .setting-control {
-    width: 100%; background: rgba(10, 13, 19, 0.8); border: 1px solid var(--card-border);
-    border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 12px; outline: none;
+  .card h3 { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .action-row { display: flex; justify-content: space-between; align-items: center; }
+  .btn-outline {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
   }
+  .btn-outline:hover { background: var(--cyan); color: #000; border-color: var(--cyan); }
 
-  /* 4. BOTTOM INPUT CAPSULE */
-  .bottom-station {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 70px;
-    padding: 0 24px 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 40;
-    pointer-events: none;
+  .setting-item { display: flex; flex-direction: column; gap: 6px; }
+  .setting-label { font-size: 12px; font-weight: 600; color: #fff; }
+  .setting-input {
+    background: rgba(10, 13, 20, 0.8);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
   }
-  .capsule-bar {
-    width: 620px; height: 48px; background: rgba(15, 19, 28, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 24px;
-    backdrop-filter: blur(30px); display: flex; align-items: center;
-    padding: 0 8px 0 16px; gap: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-    pointer-events: auto;
-  }
-  .capsule-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 13px; font-family: inherit; }
-  .mic-action-btn {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    border: none; color: #fff; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
-  }
-
-  /* Update Modal */
-  .update-modal {
-    display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(10px); z-index: 100; align-items: center; justify-content: center;
-  }
-  .update-box {
-    width: 380px; background: rgba(16, 20, 30, 0.95); border: 1px solid rgba(6, 182, 212, 0.4);
-    border-radius: 16px; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-    display: flex; flex-direction: column; gap: 14px;
-  }
-  .update-title { font-size: 15px; font-weight: 700; color: #fff; }
-  .update-desc { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5; }
-  .update-btn-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
-  .btn-modal-cancel { background: rgba(255,255,255,0.08); border: none; color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; }
-  .btn-modal-apply { background: var(--accent-cyan); border: none; color: #000; font-weight: 600; padding: 6px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; }
-
-  @keyframes floatBreathe { 0% { transform: translateY(0px) scale(0.99); } 100% { transform: translateY(-5px) scale(1.02); } }
 </style>
 </head>
 <body>
 
-<!-- 1. NATIVE TITLEBAR -->
-<div class="app-titlebar">
-  <div class="titlebar-left">
-    <div class="app-icon">К</div>
-    <span>CYBER ASSISTANT</span>
-    <span class="app-version">v2.2.0 • Pro</span>
-  </div>
-
-  <div class="titlebar-actions">
-    <button class="btn-update" id="btnUpdateCheck" onclick="checkAppUpdates()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-      <span id="updateBtnText">Проверить обновления</span>
-    </button>
-
-    <div class="win-controls">
-      <div class="win-btn" title="Свернуть" onclick="windowMinimize()">─</div>
-      <div class="win-btn" title="Развернуть" onclick="windowToggleMax()">◻</div>
-      <div class="win-btn close" title="Закрыть" onclick="windowClose()">✕</div>
-    </div>
-  </div>
-</div>
-
-<!-- 2. SUB-BAR WITH STATUS PILLS (Astra style) -->
-<div class="nav-strip">
+<!-- 1. HEADER WITH ASTRA PILLS & CONTROLS -->
+<div class="top-bar">
   <div class="nav-pills">
-    <div class="pill-tab active" onclick="switchMainTab('tabHome', this)">Главная</div>
-    <div class="pill-tab" onclick="switchMainTab('tabScenarios', this)">⚡ Сценарии</div>
-    <div class="pill-tab" onclick="switchMainTab('tabPlugins', this)">🧩 Плагины</div>
-    <div class="pill-tab" onclick="switchMainTab('tabCommands', this)">>_ Команды</div>
-    <div class="pill-tab" onclick="switchMainTab('tabSettings', this)">⚙️ Настройки</div>
+    <div class="nav-pill active" onclick="switchTab('tabMain', this)">
+      <span>✦</span> Главная
+    </div>
+    <div class="nav-pill" onclick="switchTab('tabScenarios', this)">
+      <span>⚡</span> Сценарии
+    </div>
+    <div class="nav-pill" onclick="switchTab('tabPlugins', this)">
+      <span>🧩</span> Плагины
+    </div>
+    <div class="nav-pill" onclick="switchTab('tabSettings', this)">
+      <span>⚙️</span> Настройки
+    </div>
   </div>
 
-  <div class="strip-status">
-    <div class="status-pill" id="llmStatusPill" title="Нажмите для переключения LLM (Ollama / Gemini)" onclick="cycleLlmProvider()">
-      <div class="dot" id="llmStatusDot"></div>
-      <span id="llmStatusText">LLM: <strong>Ollama (qwen2.5)</strong></span>
+  <div class="status-badges">
+    <div class="badge-pill active-engine" id="pillLlm" title="Переключить ИИ" onclick="cycleLlm()">
+      <div class="badge-dot"></div>
+      <span id="txtLlm">Ollama: qwen2.5 (RTX 5060)</span>
     </div>
-    <div class="status-pill" title="STT движок">
-      <span>🎙️ <strong>Whisper 160ms</strong></span>
+    <div class="badge-pill" title="Режим микрофона">
+      <span>🎙️ Whisper 160ms</span>
     </div>
-    <div class="status-pill" title="Озвучка">
-      <span>🔊 <strong>DmitryNeural</strong></span>
+    <div class="badge-pill" title="Голос озвучки">
+      <span>🔊 DmitryNeural</span>
     </div>
+  </div>
+
+  <div class="win-actions">
+    <div class="win-btn" title="Свернуть в трей" onclick="winMinimize()">─</div>
+    <div class="win-btn close" title="Закрыть" onclick="winClose()">✕</div>
   </div>
 </div>
 
-<!-- 3. WORKSPACE VIEWS -->
-<div class="view-wrapper">
+<!-- 2. MAIN WORKSPACE -->
+<div class="workspace">
 
-  <!-- VIEW 1: ГЛАВНЫЙ ЭКРАН -->
-  <div class="tab-view active" id="tabHome">
-    <div class="workspace-grid">
+  <!-- TAB 1: MAIN HERO INTERFACE -->
+  <div class="view-tab active" id="tabMain">
+    <div class="hero-greeting">
+      <h1>твоя Астра <span>✦</span></h1>
+      <p>Привет, Said! Чем займемся сегодня?</p>
+    </div>
 
-      <!-- LEFT: Media & Hardware -->
-      <div class="glass-card">
-        <div>
-          <div class="card-title">
-            <span>МУЛЬТИМЕДИА</span>
-            <span style="color: var(--lime-core);">ACTIVE</span>
-          </div>
+    <!-- PLASMA ORB (Jasper / Glocal Sphere) -->
+    <div class="orb-container" onclick="sendQuick('утренний брифинг')">
+      <canvas id="cyberOrbCanvas" width="180" height="180"></canvas>
+      <div class="orb-status-text">СТАТУС: <span id="orbState">ОЖИДАНИЕ</span></div>
+    </div>
 
-          <div class="media-deck">
-            <div class="media-top">
-              <div class="media-cover">🎵</div>
-              <div class="media-meta">
-                <h4>Пора возвращаться...</h4>
-                <p>БИ-2 • Spotify / Chrome</p>
-              </div>
-            </div>
-            <div class="media-bar"><div class="media-fill"></div></div>
-          </div>
+    <!-- QUICK PROMPT CHIPS (Astra / Jasper Style) -->
+    <div class="quick-chips">
+      <div class="chip" onclick="sendQuick('утренний брифинг')">☀️ Утренний брифинг</div>
+      <div class="chip" onclick="sendQuick('сверни всё')">🗔 Свернуть все окна</div>
+      <div class="chip" onclick="sendQuick('сделай громче на 20')">🔊 Громкость +20%</div>
+      <div class="chip" onclick="sendQuick('запусти steam')">🎮 Открыть Steam</div>
+      <div class="chip" onclick="sendQuick('найди на ютубе lofi hip hop')">▶ Включить YouTube</div>
+    </div>
+
+    <!-- METRICS WIDGETS -->
+    <div class="widgets-grid">
+      <div class="widget-card">
+        <div class="widget-header">
+          <span>Процессор</span>
+          <span>CPU</span>
         </div>
-
-        <div>
-          <div class="card-title" style="margin-top: 14px;">
-            <span>СИСТЕМНЫЙ МОНИТОРИНГ</span>
-            <span style="font-family: var(--font-mono); font-size: 10px;">RYZEN 5600X</span>
-          </div>
-
-          <div class="stat-group">
-            <div class="stat-item">
-              <div class="stat-meta"><span>ЦП</span><strong id="cpuVal">24%</strong></div>
-              <div class="stat-track"><div class="stat-bar" id="cpuBar" style="width: 24%; background: var(--accent-cyan);"></div></div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-meta"><span>ГПУ (RTX 5060)</span><strong id="gpuVal">18%</strong></div>
-              <div class="stat-track"><div class="stat-bar" id="gpuBar" style="width: 18%; background: var(--lime-core);"></div></div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-meta"><span>ОЗУ</span><strong id="ramVal">12.4 / 32 GB</strong></div>
-              <div class="stat-track"><div class="stat-bar" id="ramBar" style="width: 38%; background: var(--accent-purple);"></div></div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-meta"><span>Диск C:</span><strong id="diskVal">90.2 GB свободно</strong></div>
-              <div class="stat-track"><div class="stat-bar" id="diskBar" style="width: 53%; background: var(--accent-orange);"></div></div>
-            </div>
-          </div>
-        </div>
+        <div class="widget-value" id="valCpu">--%</div>
+        <div class="widget-progress-bg"><div class="widget-progress-fill" id="barCpu" style="width: 0%;"></div></div>
       </div>
 
-      <!-- CENTER: Mascot & Jasper Orb -->
-      <div class="glass-card center-stage">
-        
-        <!-- Переключатель стиля: Кибер / Cyber Orb (как Jasper) -->
-        <div class="avatar-switcher-bar">
-          <div class="avatar-switch-btn active" id="btnModeMascot" onclick="setAvatarMode('mascot')">Маскот Кибер</div>
-          <div class="avatar-switch-btn" id="btnModeOrb" onclick="setAvatarMode('orb')">Cyber Orb (Jasper)</div>
+      <div class="widget-card">
+        <div class="widget-header">
+          <span>ОЗУ Память</span>
+          <span>RAM</span>
         </div>
-
-        <!-- 1. Анимированный Маскот -->
-        <div class="mascot-head" id="head" onclick="triggerMascotClick()">
-          <div class="eyebrows">
-            <div class="brow" id="bL"></div>
-            <div class="brow r" id="bR"></div>
-          </div>
-
-          <div class="eyes">
-            <div class="eye">
-              <div class="pupil" id="pL"><div class="glare-1"></div><div class="glare-2"></div></div>
-              <div class="eyelid" id="eL"></div>
-            </div>
-            <div class="eye">
-              <div class="pupil" id="pR"><div class="glare-1"></div><div class="glare-2"></div></div>
-              <div class="eyelid" id="eR"></div>
-            </div>
-          </div>
-
-          <div class="mouth" id="m"></div>
-        </div>
-
-        <!-- 2. Cyber Orb (Аудио-реактивная сфера Jasper) -->
-        <div class="cyber-orb-container" id="orbContainer" onclick="triggerMascotClick()">
-          <canvas class="orb-canvas" id="orbCanvas" width="180" height="180"></canvas>
-        </div>
-
-        <div class="subtitle-container">
-          <div class="subtitle-label">КИБЕР // ГОЛОСОВОЙ ОТКЛИК</div>
-          <div class="subtitle-body" id="subText">Добро пожаловать, сэр! Все системы готовы.</div>
-        </div>
-
-        <div class="macro-chips">
-          <div class="chip highlight" onclick="quickSend('утренний брифинг')">☀️ Утренний брифинг</div>
-          <div class="chip" onclick="quickSend('сверни всё')">🗕 Свернуть всё</div>
-          <div class="chip" onclick="quickSend('открой браузер')">🌐 Браузер</div>
-          <div class="chip" onclick="quickSend('найди на ютубе музыку')">▶ YouTube</div>
-          <div class="chip" onclick="quickSend('запусти steam')">🎮 Steam</div>
-          <div class="chip" onclick="quickSend('пауза')">⏯ Пауза</div>
-        </div>
+        <div class="widget-value" id="valRam">-- ГБ</div>
+        <div class="widget-progress-bg"><div class="widget-progress-fill" id="barRam" style="width: 0%;"></div></div>
       </div>
 
-      <!-- RIGHT: Log -->
-      <div class="glass-card">
-        <div class="card-title">
-          <span>ЖУРНАЛ СОБЫТИЙ</span>
-          <span style="color: var(--lime-core);">REALTIME</span>
+      <div class="widget-card">
+        <div class="widget-header">
+          <span>Диск C:</span>
+          <span>SSD</span>
         </div>
-
-        <div class="chat-stream-box" id="streamLog">
-          <div class="chat-bubble ai">
-            <div class="bubble-time">SYSTEM BOOT</div>
-            <div>Cyber Assistant v2.2.0 Pro активен. Ядро WinAPI и статус-панель запущены.</div>
-          </div>
-        </div>
-
-        <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 10px;">
-          Хоткей вызова: <strong>Alt + Space</strong>
-        </div>
+        <div class="widget-value" id="valDisk">-- ГБ</div>
+        <div class="widget-progress-bg"><div class="widget-progress-fill" id="barDisk" style="width: 0%;"></div></div>
       </div>
 
+      <div class="widget-card">
+        <div class="widget-header">
+          <span>Графика</span>
+          <span>GPU</span>
+        </div>
+        <div class="widget-value" style="font-size: 15px; margin-top: 4px;">RTX 5060</div>
+        <div class="widget-progress-bg"><div class="widget-progress-fill" style="width: 100%;"></div></div>
+      </div>
+    </div>
+
+    <!-- LIVE CHAT STREAM -->
+    <div class="stream-box" id="streamLog">
+      <div class="bubble assistant">
+        <div class="bubble-time">СИСТЕМА ГОТОВА</div>
+        Кибер активен. Скажите <b>«Кибер...»</b> или нажмите <b>Alt + Space</b> для голосовой команды.
+      </div>
     </div>
   </div>
 
-  <!-- VIEW 2: СЦЕНАРИИ И МАКРОСЫ (Astra Node Scenarios) -->
-  <div class="tab-view" id="tabScenarios">
-    <div style="width: 100%;">
-      <div style="margin-bottom: 16px;">
-        <h2 style="font-size: 16px; font-weight: 700;">⚡ Готовые сценарии и макросы автоматизации</h2>
-        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Цепочки действий в 1 клик или по одной голосовой команде</p>
+  <!-- TAB 2: SCENARIOS & MACROS -->
+  <div class="view-tab" id="tabScenarios">
+    <div style="max-width: 960px; margin: 0 auto 20px auto;">
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">⚡ Сценарии и Автоматизация</h2>
+      <p style="font-size: 12px; color: var(--text-muted);">Готовые пакетные цепочки действий для работы и игр</p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>☀️ Утренний брифинг</h3>
+        <p>Кибер проверит состояние системы, свободное место на диске, озвучит точное время и пожелает отличного дня.</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: var(--lime);">Голос: «Кибер, брифинг»</span>
+          <button class="btn-outline" onclick="sendQuick('утренний брифинг')">Запустить</button>
+        </div>
       </div>
 
-      <div class="scenarios-grid">
-        <div class="scenario-card">
-          <div class="scenario-head">
-            <h3 style="font-size: 14px; font-weight: 600;">☀️ Утренний брифинг</h3>
-            <span class="scenario-badge">ГОЛОСОВОЙ ОТЧЕТ</span>
-          </div>
-          <div class="scenario-steps">
-            <div class="scenario-step"><span>1</span> Запрос времени и даты</div>
-            <div class="scenario-step"><span>2</span> Проверка нагрузки CPU, RAM и SSD</div>
-            <div class="scenario-step"><span>3</span> Голосовой отчет о готовности систем</div>
-          </div>
-          <button class="btn-run-scenario" onclick="quickSend('утренний брифинг')">▶ Запустить брифинг</button>
+      <div class="card">
+        <h3>💼 Режим разработки</h3>
+        <p>Разворачивает браузер, открывает рабочие сервисы и фокусирует окно для максимальной продуктивности.</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: var(--cyan);">Голос: «Кибер, режим работы»</span>
+          <button class="btn-outline" onclick="sendQuick('режим работы')">Запустить</button>
         </div>
+      </div>
 
-        <div class="scenario-card">
-          <div class="scenario-head">
-            <h3 style="font-size: 14px; font-weight: 600;">💻 Режим разработки / Работы</h3>
-            <span class="scenario-badge">ФОКУС</span>
-          </div>
-          <div class="scenario-steps">
-            <div class="scenario-step"><span>1</span> Запуск браузера Google Chrome</div>
-            <div class="scenario-step"><span>2</span> Подготовка рабочей среды</div>
-            <div class="scenario-step"><span>3</span> Отчет о готовности</div>
-          </div>
-          <button class="btn-run-scenario" onclick="quickSend('режим работы')">▶ Включить рабочий режим</button>
+      <div class="card">
+        <h3>🎮 Игровой режим</h3>
+        <p>Сворачивает фоновые окна, запускает клиент Steam и оптимизирует звук.</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: var(--purple);">Голос: «Кибер, игровой режим»</span>
+          <button class="btn-outline" onclick="sendQuick('игровой режим')">Запустить</button>
         </div>
+      </div>
 
-        <div class="scenario-card">
-          <div class="scenario-head">
-            <h3 style="font-size: 14px; font-weight: 600;">🎮 Игровой режим</h3>
-            <span class="scenario-badge">FPS BOOST</span>
-          </div>
-          <div class="scenario-steps">
-            <div class="scenario-step"><span>1</span> Сворачивание всех фоновых окон</div>
-            <div class="scenario-step"><span>2</span> Запуск клиента Steam</div>
-            <div class="scenario-step"><span>3</span> Очистка фоновых помех</div>
-          </div>
-          <button class="btn-run-scenario" onclick="quickSend('игровой режим')">▶ Включить игровой режим</button>
+      <div class="card">
+        <h3>🧹 Очистить экран</h3>
+        <p>Мгновенно сворачивает все активные окна и переходит на чистый Рабочий стол.</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: var(--text-muted);">Голос: «Кибер, сверни всё»</span>
+          <button class="btn-outline" onclick="sendQuick('сверни всё')">Запустить</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- VIEW 3: ПЛАГИНЫ (Astra Plugin Store) -->
-  <div class="tab-view" id="tabPlugins">
-    <div style="width: 100%;">
-      <div style="margin-bottom: 16px;">
-        <h2 style="font-size: 16px; font-weight: 700;">🧩 Каталог плагинов и модулей расширения</h2>
-        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Модульная система возможностей ассистента в стиле Astra Plugins SDK</p>
-      </div>
-      <div class="plugin-catalog" id="pluginCatalog">
-        <!-- Генерируется из Python PluginManager -->
-      </div>
+  <!-- TAB 3: PLUGINS & EXTENSIONS -->
+  <div class="view-tab" id="tabPlugins">
+    <div style="max-width: 960px; margin: 0 auto 20px auto;">
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">🧩 Модули и Плагины</h2>
+      <p style="font-size: 12px; color: var(--text-muted);">Расширяйте возможности ассистента в один клик</p>
     </div>
-  </div>
-
-  <!-- VIEW 4: КОМАНДЫ -->
-  <div class="tab-view" id="tabCommands">
-    <div style="width: 100%;">
-      <div style="margin-bottom: 16px;">
-        <h2 style="font-size: 16px; font-weight: 700;">>_ Справочник голосовых команд</h2>
-        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Команды, которые Кибер выполняет напрямую без задержек</p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>📱 Telegram Companion (Astra Connect)</h3>
+        <p>Управляйте компьютером прямо с телефона из Telegram: делайте скриншоты экрана (/screen), проверяйте статус железа (/status) и передавайте голосовые реплики.</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: #10b981;">● Активен</span>
+          <button class="btn-outline" onclick="switchTab('tabSettings', document.querySelectorAll('.nav-pill')[3])">Настроить токен</button>
+        </div>
       </div>
-      <div class="settings-grid">
-        <div class="settings-group">
-          <h3>🗔 Управление окнами</h3>
-          <div class="setting-sub">• «Кибер, сверни всё» — открывает рабочий стол (Win+D)</div>
-          <div class="setting-sub">• «Кибер, сверни это окно» — минимизирует активную программу</div>
-          <div class="setting-sub">• «Кибер, разверни на весь экран» — разворачивает окно</div>
-          <div class="setting-sub">• «Кибер, закрой программу» — безопасное закрытие (Alt+F4/WM_CLOSE)</div>
-        </div>
 
-        <div class="settings-group">
-          <h3>🌐 Интернет и Браузер</h3>
-          <div class="setting-sub">• «Кибер, найди в интернете [запрос]» — быстрый поиск Google/Яндекс</div>
-          <div class="setting-sub">• «Кибер, найди на ютубе [видео]» — мгновенный поиск на YouTube</div>
-          <div class="setting-sub">• «Кибер, открой ютуб» — запуск главной страницы YouTube</div>
+      <div class="card">
+        <h3>🔊 Core Audio (Управление громкостью)</h3>
+        <p>Прямой доступ к звуковой подсистеме Windows через pycaw: плавная регулировка, точные проценты, отключение звука (Mute).</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: #10b981;">● Встроен</span>
+          <button class="btn-outline" onclick="sendQuick('сделай громче на 10')">Тест (+10%)</button>
         </div>
+      </div>
 
-        <div class="settings-group">
-          <h3>🎮 Программы и Игры</h3>
-          <div class="setting-sub">• «Кибер, запусти Steam» — запуск Steam клиента</div>
-          <div class="setting-sub">• «Кибер, открой Discord» — запуск Discord</div>
-          <div class="setting-sub">• «Кибер, открой Telegram» — запуск Telegram Desktop</div>
+      <div class="card">
+        <h3>🌐 Web Search & YouTube</h3>
+        <p>Быстрый поиск информации в сети и мгновенный запуск любого видео или музыки на YouTube по названию.</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: #10b981;">● Встроен</span>
+          <button class="btn-outline" onclick="sendQuick('найди на ютубе lofi')">Тест YouTube</button>
         </div>
+      </div>
 
-        <div class="settings-group">
-          <h3>🎵 Звук и Мультимедиа</h3>
-          <div class="setting-sub">• «Кибер, сделай громче / тише на 20%» — регулировка громкости</div>
-          <div class="setting-sub">• «Кибер, заглуши звук / включи звук» — отключение звука (Mute)</div>
-          <div class="setting-sub">• «Кибер, громкость на максимум / на 50%» — точный уровень громкости</div>
-          <div class="setting-sub">• «Кибер, пауза / плей» — переключение трека</div>
-          <div class="setting-sub">• «Кибер, следующий трек» — перелистывание песни</div>
-          <div class="setting-sub">• «Кибер, утренний брифинг» — утренняя сводка времени и железа</div>
+      <div class="card">
+        <h3>🧠 Двухуровневый LLM маршрутизатор</h3>
+        <p>Автоматически распределяет системные команды на WinAPI, а свободные вопросы направляет в локальную Ollama RTX или Gemini Cloud.</p>
+        <div class="action-row">
+          <span style="font-size: 11px; color: #10b981;">● Встроен</span>
+          <button class="btn-outline" onclick="cycleLlm()">Сменить провайдера</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- VIEW 5: НАСТРОЙКИ -->
-  <div class="tab-view" id="tabSettings">
-    <div style="width: 100%;">
-      <div style="margin-bottom: 16px;">
-        <h2 style="font-size: 16px; font-weight: 700;">⚙️ Системная конфигурация ассистента</h2>
-        <p style="font-size: 12px; color: rgba(255,255,255,0.5);">Тонкая настройка оборудования, моделей интеллекта и синтеза речи</p>
+  <!-- TAB 4: SETTINGS -->
+  <div class="view-tab" id="tabSettings">
+    <div style="max-width: 960px; margin: 0 auto 20px auto;">
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">⚙️ Системные настройки</h2>
+      <p style="font-size: 12px; color: var(--text-muted);">Параметры запуска, искусственного интеллекта и интеграций</p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>🧠 Настройка нейросети (LLM)</h3>
+        <div class="setting-item">
+          <div class="setting-label">Провайдер ИИ:</div>
+          <select class="setting-input" id="selProvider" onchange="saveLlmSettings()">
+            <option value="ollama" selected>Ollama (Локально на RTX 5060)</option>
+            <option value="gemini">Google Gemini Cloud (Быстрый)</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">Локальная модель:</div>
+          <select class="setting-input" id="selModel" onchange="saveLlmSettings()">
+            <option value="qwen2.5:3b" selected>qwen2.5:3b (Рекомендуется)</option>
+            <option value="llama3.2:1b">llama3.2:1b (Ультрабыстрая)</option>
+          </select>
+        </div>
+        <div class="setting-item" id="rowGeminiKey" style="display: none;">
+          <div class="setting-label">Gemini API Key:</div>
+          <input type="password" class="setting-input" id="inpGeminiKey" placeholder="AIzaSy..." onchange="saveLlmSettings()" />
+        </div>
       </div>
 
-      <div class="settings-grid">
-        <div class="settings-group">
-          <h3>🎙️ Аудио и Микрофон</h3>
-          <div class="setting-row">
-            <span class="setting-label">Устройство захвата речи:</span>
-            <select class="setting-control">
-              <option selected>Аудио устройства USB (Гарнитура)</option>
-              <option>Realtek High Definition Audio</option>
-              <option>NVIDIA Broadcast</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Модель распознавания (STT):</span>
-            <select class="setting-control">
-              <option selected>faster-whisper: small (CUDA RTX 5060 • 160ms)</option>
-              <option>faster-whisper: base (Ультрабыстрый • 80ms)</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Имя активации (Wake-Word):</span>
-            <input type="text" class="setting-control" value="Кибер" />
-          </div>
+      <div class="card">
+        <h3>📱 Telegram Companion</h3>
+        <div class="setting-item">
+          <div class="setting-label">Токен бота (@BotFather):</div>
+          <input type="password" class="setting-input" id="inpTgToken" placeholder="123456789:ABCdefGhI..." />
         </div>
+        <button class="btn-outline" style="margin-top: 10px;" onclick="connectTgBot()">Подключить бота</button>
+      </div>
 
-        <div class="settings-group">
-          <h3>🔊 Голос и Озвучка (TTS)</h3>
-          <div class="setting-row">
-            <span class="setting-label">Голосовой движок:</span>
-            <select class="setting-control">
-              <option selected>Edge-TTS: DmitryNeural (Мужской, глубокий тембр)</option>
-              <option>Edge-TTS: SvetlanaNeural (Женский, стиль Astra)</option>
-              <option>Silero TTS (100% офлайн на CPU)</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Коронная фраза с юмором:</span>
-            <input type="text" class="setting-control" value="Ну... почти, сэр." />
-          </div>
+      <div class="card">
+        <h3>🎙️ Голос и Вызов</h3>
+        <div class="setting-item">
+          <div class="setting-label">Хоткей принудительного вызова:</div>
+          <input type="text" class="setting-input" value="Alt + Space" readonly />
         </div>
-
-        <div class="settings-group">
-          <h3>🧠 Интеллект (LLM Provider)</h3>
-          <div class="setting-row">
-            <span class="setting-label">Активный ИИ-провайдер:</span>
-            <select class="setting-control" id="llmProviderSelect" onchange="onLlmConfigChange()">
-              <option value="ollama" selected>Ollama (Локально на GPU RTX 5060 • 100% Приватно)</option>
-              <option value="gemini">Google Gemini 2.5 Flash (Облачный • Мгновенный)</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Локальная модель Ollama:</span>
-            <select class="setting-control" id="llmModelSelect" onchange="onLlmConfigChange()">
-              <option value="qwen2.5:3b" selected>qwen2.5:3b (Идеальный баланс скорости и ума)</option>
-              <option value="llama3.2:1b">llama3.2:1b (Ультралегкая • 350+ токенов/сек)</option>
-            </select>
-          </div>
-          <div class="setting-row" id="geminiKeyRow" style="display: none;">
-            <span class="setting-label">Google Gemini API Key:</span>
-            <input type="password" class="setting-control" id="geminiApiKeyInput" placeholder="Вставьте ваш AIzaSy..." onchange="onLlmConfigChange()" />
-            <span class="setting-sub">Ключ сохраняется локально и используется только для запросов к Google AI</span>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Системный характер:</span>
-            <input type="text" class="setting-control" value="Ты — Кибер, верный цифровой спутник KINGSAID." />
-          </div>
+        <div class="setting-item">
+          <div class="setting-label">Слово активации (Wake-Word):</div>
+          <input type="text" class="setting-input" value="Кибер" readonly />
         </div>
+      </div>
 
-        <div class="settings-group">
-          <h3>🪟 Поведение Windows</h3>
-          <div class="setting-row">
-            <span class="setting-label">Хоткей принудительного вызова:</span>
-            <input type="text" class="setting-control" value="Alt + Space" readonly />
-            <span class="setting-sub">Нажмите Alt + Space в любой игре или приложении для мгновенного вызова</span>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Автозагрузка при старте ПК:</span>
-            <select class="setting-control">
-              <option selected>Включено (В системный трей)</option>
-              <option>Выключено</option>
-            </select>
-          </div>
+      <div class="card">
+        <h3>🪟 Поведение Windows</h3>
+        <div class="setting-item">
+          <div class="setting-label">При закрытии окна:</div>
+          <select class="setting-input">
+            <option selected>Сворачивать в системный трей (продолжать слушать)</option>
+            <option>Полностью закрывать программу</option>
+          </select>
         </div>
-
-        <div class="settings-group">
-          <h3>📱 Telegram Companion (Astra Connect)</h3>
-          <div class="setting-row">
-            <span class="setting-label">Telegram Bot Token:</span>
-            <input type="password" class="setting-control" id="tgTokenInput" placeholder="123456789:ABCdefGhI..." />
-            <span class="setting-sub">Создайте бота у @BotFather и вставьте токен для удаленного управления ПК</span>
-          </div>
-          <button class="btn-run-scenario" style="margin-top: 6px;" onclick="saveAndStartTelegramBot()">Подключить Telegram бота</button>
+        <div class="setting-item">
+          <div class="setting-label">Запуск при старте Windows:</div>
+          <select class="setting-input">
+            <option selected>Включено</option>
+            <option>Выключено</option>
+          </select>
         </div>
       </div>
     </div>
@@ -937,478 +688,230 @@
 
 </div>
 
-<!-- 4. BOTTOM INPUT CAPSULE -->
-<div class="bottom-station">
-  <div class="capsule-bar">
-    <input type="text" class="capsule-input" id="cmdInput" placeholder="Скажите «Кибер...» или напишите команду..." onkeydown="handleEnter(event)" />
-    <button class="mic-action-btn" onclick="micClick()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-    </button>
-  </div>
-</div>
-
-<!-- Modal Update Dialog -->
-<div class="update-modal" id="updateModal">
-  <div class="update-box">
-    <div class="update-title"><span>🚀</span> Найдено обновление!</div>
-    <div class="update-desc" id="updateDesc">Доступна новая версия с вашего GitHub. Установить?</div>
-    <div class="update-btn-row">
-      <button class="btn-modal-cancel" onclick="closeUpdateModal()">Позже</button>
-      <button class="btn-modal-apply" onclick="applyUpdateNow()">Обновить</button>
+<!-- 3. FLOATING INPUT CAPSULE (Astra / Jasper Dock) -->
+<div class="bottom-dock">
+  <div class="capsule-box">
+    <input type="text" class="capsule-input" id="mainInput" placeholder="Спроси о чём угодно или скажи «Кибер...»" onkeydown="onKeyEnter(event)" />
+    <div class="capsule-actions">
+      <button class="capsule-btn" title="Голосовой вызов" onclick="triggerMic()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+      <button class="capsule-btn primary" title="Отправить" onclick="submitInput()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
     </div>
   </div>
 </div>
 
 <script>
-  const pL = document.getElementById('pL');
-  const pR = document.getElementById('pR');
-  const eL = document.getElementById('eL');
-  const eR = document.getElementById('eR');
-  const bL = document.getElementById('bL');
-  const bR = document.getElementById('bR');
-  const m = document.getElementById('m');
-  const subText = document.getElementById('subText');
-
-  // Переключение стиля аватара (Маскот / Cyber Orb Jasper)
-  let currentAvatarMode = 'mascot';
-  function setAvatarMode(mode) {
-    currentAvatarMode = mode;
-    const mascotHead = document.getElementById('head');
-    const orbContainer = document.getElementById('orbContainer');
-    const btnMascot = document.getElementById('btnModeMascot');
-    const btnOrb = document.getElementById('btnModeOrb');
-
-    if (mode === 'orb') {
-      mascotHead.style.display = 'none';
-      orbContainer.style.display = 'flex';
-      btnMascot.classList.remove('active');
-      btnOrb.classList.add('active');
-      startOrbAnimation();
-    } else {
-      mascotHead.style.display = 'flex';
-      orbContainer.style.display = 'none';
-      btnMascot.classList.add('active');
-      btnOrb.classList.remove('active');
-    }
-  }
-
-  // --- CYBER ORB CANVAS RENDERER (Jasper / Glocal Style) ---
-  let orbCanvas = document.getElementById('orbCanvas');
-  let orbCtx = orbCanvas.getContext('2d');
-  let orbAnimationRunning = false;
-  let orbPulse = 0;
-
-  function startOrbAnimation() {
-    if (orbAnimationRunning) return;
-    orbAnimationRunning = true;
-    animateOrb();
-  }
-
-  function animateOrb() {
-    if (currentAvatarMode !== 'orb') {
-      orbAnimationRunning = false;
-      return;
-    }
-    orbPulse += 0.04;
-    const w = orbCanvas.width;
-    const h = orbCanvas.height;
-    const cx = w / 2;
-    const cy = h / 2;
-
-    orbCtx.clearRect(0, 0, w, h);
-
-    // Внешнее свечение
-    const glowRad = 60 + Math.sin(orbPulse) * 8;
-    const glowGrad = orbCtx.createRadialGradient(cx, cy, 20, cx, cy, 80);
-    glowGrad.addColorStop(0, 'rgba(163, 230, 53, 0.8)');
-    glowGrad.addColorStop(0.5, 'rgba(132, 204, 22, 0.3)');
-    glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    orbCtx.fillStyle = glowGrad;
-    orbCtx.beginPath();
-    orbCtx.arc(cx, cy, 85, 0, Math.PI * 2);
-    orbCtx.fill();
-
-    // Плазменные орбиты (кольца Jasper)
-    orbCtx.save();
-    orbCtx.translate(cx, cy);
-    for (let i = 0; i < 3; i++) {
-      orbCtx.beginPath();
-      orbCtx.strokeStyle = i === 0 ? '#ccff00' : (i === 1 ? '#06b6d4' : '#84cc16');
-      orbCtx.lineWidth = 2.5;
-      orbCtx.rotate(orbPulse * (i % 2 === 0 ? 0.6 : -0.8));
-      const rx = 50 + Math.sin(orbPulse * 1.5 + i) * 6;
-      const ry = 28 + Math.cos(orbPulse * 1.2 + i) * 5;
-      orbCtx.ellipse(0, 0, rx, ry, i * Math.PI / 3, 0, Math.PI * 2);
-      orbCtx.stroke();
-    }
-    orbCtx.restore();
-
-    // Центральное ядро сферы
-    const coreGrad = orbCtx.createRadialGradient(cx - 8, cy - 8, 5, cx, cy, 38);
-    coreGrad.addColorStop(0, '#ffffff');
-    coreGrad.addColorStop(0.3, '#d9f99d');
-    coreGrad.addColorStop(0.7, '#84cc16');
-    coreGrad.addColorStop(1, '#1e3a07');
-    orbCtx.fillStyle = coreGrad;
-    orbCtx.beginPath();
-    orbCtx.arc(cx, cy, 36 + Math.sin(orbPulse * 2) * 3, 0, Math.PI * 2);
-    orbCtx.fill();
-
-    requestAnimationFrame(animateOrb);
-  }
-
-  // Eye Tracking Mouse
-  window.addEventListener('mousemove', (e) => {
-    const head = document.getElementById('head');
-    if (!head || currentAvatarMode !== 'mascot') return;
-    const rect = head.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-
-    const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
-    const dist = Math.min(6, Math.hypot(e.clientX - cx, e.clientY - cy) / 35);
-
-    const ox = Math.cos(angle) * dist;
-    const oy = Math.sin(angle) * dist;
-
-    if (pL && pR) {
-      pL.style.transform = `translate(${ox}px, ${oy}px)`;
-      pR.style.transform = `translate(${ox}px, ${oy}px)`;
-    }
-  });
-
-  // Blinking
-  function blink() {
-    if (eL && eR && currentAvatarMode === 'mascot') {
-      eL.style.transform = 'translateY(0%)';
-      eR.style.transform = 'translateY(0%)';
-      setTimeout(() => {
-        eL.style.transform = 'translateY(-100%)';
-        eR.style.transform = 'translateY(-100%)';
-      }, 130);
-    }
-    setTimeout(blink, 2400 + Math.random() * 3800);
-  }
-  blink();
-
-  function setEmotion(type, phrase) {
-    if (phrase && subText) subText.innerText = phrase;
-    if (!bL || !bR || !m) return;
-
-    if (type === 'guilty') {
-      bL.style.transform = 'rotate(14deg)';
-      bR.style.transform = 'rotate(-14deg)';
-      m.style.width = '14px'; m.style.height = '6px';
-    } else if (type === 'happy' || type === 'window' || type === 'app' || type === 'browser' || type === 'briefing' || type === 'scenario') {
-      bL.style.transform = 'rotate(-10deg) translateY(-3px)';
-      bR.style.transform = 'rotate(10deg) translateY(-3px)';
-      m.style.width = '20px'; m.style.height = '11px';
-      m.style.borderRadius = '0 0 16px 16px';
-    } else if (type === 'listen') {
-      bL.style.transform = 'rotate(0deg)';
-      bR.style.transform = 'rotate(0deg)';
-      m.style.width = '10px'; m.style.height = '10px';
-      m.style.borderRadius = '50%';
-    }
-  }
-
-  // --- TAB SWITCHER (Главная, Сценарии, Плагины, Команды, Настройки) ---
-  function switchMainTab(viewId, el) {
-    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.pill-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
+  // 1. TABS NAVIGATION
+  function switchTab(tabId, el) {
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+    var target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
     if (el) el.classList.add('active');
-
-    if (viewId === 'tabPlugins') {
-      loadPluginsUI();
-    }
   }
 
-  // --- BACKEND API BRIDGE ---
-  function sendToPythonBackend(cmdText) {
+  // 2. INTERACTIVE 3D/PLASMA CYBER ORB (Jasper / Glocal Core)
+  var canvas = document.getElementById('cyberOrbCanvas');
+  var ctx = canvas.getContext('2d');
+  var orbAngle = 0;
+  var orbPulse = 0;
+  var currentOrbEmotion = 'idle';
+
+  function renderOrb() {
+    var w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    var cx = w / 2, cy = h / 2;
+    var baseRadius = 55 + Math.sin(orbPulse) * 4;
+
+    // Glowing core gradient
+    var grad = ctx.createRadialGradient(cx, cy, 5, cx, cy, baseRadius * 1.3);
+    if (currentOrbEmotion === 'listen') {
+      grad.addColorStop(0, '#f97316');
+      grad.addColorStop(0.5, '#ea580c');
+      grad.addColorStop(1, 'rgba(234, 88, 12, 0)');
+    } else {
+      grad.addColorStop(0, '#ccff00');
+      grad.addColorStop(0.4, '#06b6d4');
+      grad.addColorStop(0.8, '#84cc16');
+      grad.addColorStop(1, 'rgba(6, 182, 212, 0)');
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, baseRadius * 1.25, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Orbital plasma rings
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(orbAngle);
+
+    ctx.beginPath();
+    ctx.ellipse(0, 0, baseRadius * 1.15, baseRadius * 0.45, Math.PI / 4, 0, Math.PI * 2);
+    ctx.strokeStyle = currentOrbEmotion === 'listen' ? '#fdba74' : '#ccff00';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(0, 0, baseRadius * 1.1, baseRadius * 0.4, -Math.PI / 4, 0, Math.PI * 2);
+    ctx.strokeStyle = currentOrbEmotion === 'listen' ? '#ea580c' : '#06b6d4';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.restore();
+
+    orbAngle += 0.025;
+    orbPulse += 0.045;
+    requestAnimationFrame(renderOrb);
+  }
+  renderOrb();
+
+  // 3. API INTEGRATION
+  function sendCommand(text) {
+    if (!text || !text.trim()) return;
+    addMessage(text, 'user');
+
+    var orbState = document.getElementById('orbState');
+    currentOrbEmotion = 'listen';
+    orbState.innerText = 'ОБРАБОТКА...';
+    orbState.style.color = '#f97316';
+
     fetch('/api/execute', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({command: cmdText})
+      body: JSON.stringify({ command: text })
     })
     .then(r => r.json())
-    .then(res => {
-      setEmotion(res.emotion, res.reply);
-      addStreamLog(cmdText, res.reply, res.action);
+    .then(data => {
+      currentOrbEmotion = 'idle';
+      orbState.innerText = 'ОЖИДАНИЕ';
+      orbState.style.color = 'var(--lime)';
+      addMessage(data.reply || 'Команда выполнена.', 'assistant', data.provider);
     })
-    .catch(err => console.error(err));
-  }
-
-  function windowMinimize() { window.blur(); }
-  function windowToggleMax() { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
-  function windowClose() { window.close(); }
-
-  function checkAppUpdates() {
-    var btn = document.getElementById('btnUpdateCheck');
-    var txt = document.getElementById('updateBtnText');
-    txt.innerText = 'Проверка...';
-
-    fetch('/api/check_updates', {method: 'POST'})
-    .then(r => r.json())
-    .then(res => {
-      if (res.has_update) {
-        btn.classList.add('has-update');
-        txt.innerText = 'Обновление доступно!';
-        document.getElementById('updateDesc').innerText = 'Коммит ' + res.latest_commit + ': ' + res.message;
-        document.getElementById('updateModal').style.display = 'flex';
-      } else {
-        txt.innerText = 'Актуальная версия';
-        setTimeout(function() { txt.innerText = 'Проверить обновления'; }, 2500);
-      }
-    })
-    .catch(() => { txt.innerText = 'Ошибка'; });
-  }
-
-  function applyUpdateNow() {
-    var txt = document.getElementById('updateBtnText');
-    txt.innerText = 'Обновляюсь...';
-    closeUpdateModal();
-    fetch('/api/perform_update', {method: 'POST'})
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        alert('Приложение успешно обновлено! Перезапустите окно.');
-      } else {
-        alert('Ошибка обновления: ' + res.error);
-      }
-      txt.innerText = 'Проверить обновления';
+    .catch(err => {
+      currentOrbEmotion = 'idle';
+      orbState.innerText = 'ОШИБКА';
+      addMessage('Ошибка связи с ядром ассистента.', 'assistant');
     });
   }
 
-  function closeUpdateModal() {
-    document.getElementById('updateModal').style.display = 'none';
+  function addMessage(msg, type, meta) {
+    var box = document.getElementById('streamLog');
+    var b = document.createElement('div');
+    b.className = 'bubble ' + type;
+    var d = new Date();
+    var time = d.toTimeString().split(' ')[0];
+    b.innerHTML = `<div class="bubble-time">${time} ${meta ? '• ' + meta : ''}</div><div>${msg}</div>`;
+    box.appendChild(b);
+    b.scrollIntoView({ behavior: 'smooth' });
   }
 
-  function loadPluginsUI() {
-    var container = document.getElementById('pluginCatalog');
-    if (!container) return;
+  function submitInput() {
+    var inp = document.getElementById('mainInput');
+    var val = inp.value.trim();
+    if (val) {
+      sendCommand(val);
+      inp.value = '';
+    }
+  }
 
-    fetch('/api/plugins', {method: 'POST'})
+  function onKeyEnter(e) {
+    if (e.key === 'Enter') submitInput();
+  }
+
+  function sendQuick(txt) {
+    sendCommand(txt);
+  }
+
+  function triggerMic() {
+    var orbState = document.getElementById('orbState');
+    currentOrbEmotion = 'listen';
+    orbState.innerText = 'СЛУШАЮ...';
+    orbState.style.color = '#f97316';
+    setTimeout(function() {
+      sendCommand('утренний брифинг');
+    }, 1200);
+  }
+
+  // 4. TELEMETRY POLLING (CPU/RAM/DISK)
+  function pollTelemetry() {
+    fetch('/api/telemetry', { method: 'POST' })
     .then(r => r.json())
-    .then(list => renderPluginsList(list, container))
-    .catch(() => {});
-  }
+    .then(st => {
+      if (!st) return;
+      document.getElementById('valCpu').innerText = st.cpu_percent + '%';
+      document.getElementById('barCpu').style.width = st.cpu_percent + '%';
 
-  function renderPluginsList(plugins, container) {
-    container.innerHTML = '';
-    plugins.forEach(p => {
-      var card = document.createElement('div');
-      card.className = 'plugin-card';
-      card.innerHTML = `
-        <div class="plugin-head">
-          <div class="plugin-icon-box">${p.icon || '📦'}</div>
-          <div class="plugin-info">
-            <h3>${p.name}</h3>
-            <p>${p.category || 'Системный модуль'}</p>
-          </div>
-        </div>
-        <div class="plugin-desc">${p.description}</div>
-        <div class="plugin-footer">
-          <span style="font-size: 11px; color: rgba(255,255,255,0.4);">v${p.version || '1.0'}</span>
-          <button class="btn-toggle-plugin ${p.enabled ? '' : 'off'}" onclick="togglePluginClick('${p.id}', this)">
-            ${p.enabled ? 'Включен' : 'Отключен'}
-          </button>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
+      document.getElementById('valRam').innerText = st.ram_used_gb + ' ГБ';
+      document.getElementById('barRam').style.width = st.ram_percent + '%';
 
-  function togglePluginClick(pluginId, btn) {
-    fetch('/api/toggle_plugin', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({plugin_id: pluginId})
-    })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        if (res.enabled) {
-          btn.className = 'btn-toggle-plugin';
-          btn.innerText = 'Включен';
-        } else {
-          btn.className = 'btn-toggle-plugin off';
-          btn.innerText = 'Отключен';
-        }
-      }
-    });
-  }
-
-  // --- LLM PROVIDER SWITCHER (Astra Style Status Pill) ---
-  let activeLlmProvider = 'ollama';
-  let activeLlmModel = 'qwen2.5:3b';
-
-  function initLlmConfig() {
-    fetch('/api/get_llm_config', {method: 'POST'})
-    .then(r => r.json())
-    .then(cfg => {
-      activeLlmProvider = cfg.provider || 'ollama';
-      activeLlmModel = cfg.model || 'qwen2.5:3b';
-      updateLlmUI(activeLlmProvider, activeLlmModel);
+      document.getElementById('valDisk').innerText = st.disk_free_gb + ' ГБ';
+      document.getElementById('barDisk').style.width = (100 - st.disk_percent) + '%';
     })
     .catch(() => {});
   }
-  initLlmConfig();
+  setInterval(pollTelemetry, 3000);
+  pollTelemetry();
 
-  function updateLlmUI(provider, model) {
-    const pillText = document.getElementById('llmStatusText');
-    const pillDot = document.getElementById('llmStatusDot');
-    const providerSelect = document.getElementById('llmProviderSelect');
-    const modelSelect = document.getElementById('llmModelSelect');
-    const keyRow = document.getElementById('geminiKeyRow');
-
-    if (providerSelect) providerSelect.value = provider;
-    if (modelSelect) modelSelect.value = model;
-
-    if (provider === 'gemini') {
-      if (pillText) pillText.innerHTML = 'LLM: <strong>Gemini Cloud</strong>';
-      if (pillDot) { pillDot.style.background = '#06b6d4'; pillDot.style.boxShadow = '0 0 6px #06b6d4'; }
-      if (keyRow) keyRow.style.display = 'flex';
-    } else {
-      const shortName = model.replace(':3b', '').replace(':1b', '');
-      if (pillText) pillText.innerHTML = `LLM: <strong>Ollama (${shortName})</strong>`;
-      if (pillDot) { pillDot.style.background = '#84cc16'; pillDot.style.boxShadow = '0 0 6px #84cc16'; }
-      if (keyRow) keyRow.style.display = 'none';
-    }
+  // 5. LLM SWITCHER
+  function cycleLlm() {
+    var sel = document.getElementById('selProvider');
+    sel.value = sel.value === 'ollama' ? 'gemini' : 'ollama';
+    saveLlmSettings();
   }
 
-  function cycleLlmProvider() {
-    if (activeLlmProvider === 'ollama') {
-      activeLlmProvider = 'gemini';
-      activeLlmModel = 'gemini-2.5-flash';
-    } else {
-      activeLlmProvider = 'ollama';
-      activeLlmModel = 'qwen2.5:3b';
-    }
-    syncLlmToServer();
-  }
-
-  function onLlmConfigChange() {
-    const provSel = document.getElementById('llmProviderSelect');
-    const modSel = document.getElementById('llmModelSelect');
-    const keyInp = document.getElementById('geminiApiKeyInput');
-
-    activeLlmProvider = provSel.value;
-    activeLlmModel = activeLlmProvider === 'gemini' ? 'gemini-2.5-flash' : modSel.value;
-    syncLlmToServer(keyInp ? keyInp.value.trim() : null);
-  }
-
-  function syncLlmToServer(keyVal) {
-    const bodyData = {
-      provider: activeLlmProvider,
-      model: activeLlmModel
-    };
-    if (keyVal !== null && keyVal !== undefined) {
-      bodyData.gemini_key = keyVal;
-    }
+  function saveLlmSettings() {
+    var prov = document.getElementById('selProvider').value;
+    var model = document.getElementById('selModel').value;
+    var key = document.getElementById('inpGeminiKey').value;
+    document.getElementById('rowGeminiKey').style.display = prov === 'gemini' ? 'flex' : 'none';
 
     fetch('/api/set_llm_config', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(bodyData)
+      body: JSON.stringify({ provider: prov, model: model, gemini_key: key })
     })
     .then(r => r.json())
     .then(res => {
       if (res.success) {
-        updateLlmUI(res.provider, res.model);
-        addStreamLog('Провайдер интеллекта переключен', `Активна модель: ${res.provider.toUpperCase()} [${res.model}]`, 'SYSTEM');
+        document.getElementById('txtLlm').innerText = (res.provider === 'ollama' ? 'Ollama: ' : 'Gemini: ') + res.model;
       }
     });
   }
 
-  function saveAndStartTelegramBot() {
-    var token = document.getElementById('tgTokenInput').value.trim();
-    if (!token) {
-      alert('Пожалуйста, введите токен бота от @BotFather.');
-      return;
-    }
+  function connectTgBot() {
+    var tok = document.getElementById('inpTgToken').value.trim();
+    if (!tok) return alert('Введите токен бота!');
     fetch('/api/start_telegram', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ token: token })
+      body: JSON.stringify({ token: tok })
     })
     .then(r => r.json())
     .then(res => {
-      if (res.success) {
-        alert('Telegram бот запущен! Отправьте ему /start в Telegram.');
-        addStreamLog('Telegram Bot', 'Модуль Astra Connect активирован.', 'SYSTEM');
-      } else {
-        alert('Ошибка запуска бота: ' + res.error);
-      }
+      if (res.success) alert('Telegram бот подключен!');
+      else alert('Ошибка: ' + res.error);
     });
   }
 
-  function addStreamLog(cmd, reply, action) {
-    var log = document.getElementById('streamLog');
-    if (!log) return;
-    var d = new Date();
-    var timeStr = d.toTimeString().split(' ')[0];
-
-    var userBubble = document.createElement('div');
-    userBubble.className = 'chat-bubble cmd';
-    userBubble.innerHTML = `<div class="bubble-time">${timeStr} • ВВОД</div><div>${cmd}</div>`;
-    log.appendChild(userBubble);
-
-    var aiBubble = document.createElement('div');
-    aiBubble.className = 'chat-bubble ai';
-    aiBubble.innerHTML = `<div class="bubble-time">${timeStr} • ${action ? action.toUpperCase() : 'CYBER'}</div><div>${reply}</div>`;
-    log.appendChild(aiBubble);
-
-    log.scrollTop = log.scrollHeight;
+  function winMinimize() {
+    fetch('/api/execute', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ command: 'сверни окно' })
+    });
   }
 
-  function quickSend(txt) {
-    sendToPythonBackend(txt);
+  function winClose() {
+    fetch('/api/execute', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ command: 'сверни окно' })
+    });
   }
-
-  function handleEnter(e) {
-    if (e.key === 'Enter') {
-      var inp = document.getElementById('cmdInput');
-      var val = inp.value.trim();
-      if (val) {
-        sendToPythonBackend(val);
-        inp.value = '';
-      }
-    }
-  }
-
-  function micClick() {
-    setEmotion('listen', 'Слушаю вас, сэр...');
-    setTimeout(function() {
-      quickSend('утренний брифинг');
-    }, 1200);
-  }
-
-  function triggerMascotClick() {
-    quickSend('Кибер, как дела?');
-  }
-
-  // Телеметрия железа (каждые 3 секунды)
-  setInterval(() => {
-    fetch('/api/telemetry', {method: 'POST'})
-    .then(r => r.json())
-    .then(st => {
-      if (st.cpu_percent !== undefined) {
-        document.getElementById('cpuVal').innerText = st.cpu_percent + '%';
-        document.getElementById('cpuBar').style.width = st.cpu_percent + '%';
-      }
-      if (st.ram_percent !== undefined) {
-        document.getElementById('ramVal').innerText = st.ram_used_gb + ' / ' + st.ram_total_gb + ' GB';
-        document.getElementById('ramBar').style.width = st.ram_percent + '%';
-      }
-      if (st.disk_free_gb !== undefined) {
-        document.getElementById('diskVal').innerText = st.disk_free_gb + ' GB свободно';
-        document.getElementById('diskBar').style.width = st.disk_percent + '%';
-      }
-    })
-    .catch(() => {});
-  }, 3000);
 </script>
-
 </body>
 </html>

@@ -16,6 +16,7 @@ from core.speaker import speaker
 from core.hotkey import HotkeyManager
 from core.listener import VoiceListener
 from core.telegram_companion import TelegramCompanion
+from core.tray import SystemTrayManager
 from tools.telemetry import get_system_telemetry
 
 PORT = 54321
@@ -25,7 +26,7 @@ router = CommandRouter(llm_engine=llm_engine)
 updater = AppUpdater(os.path.dirname(__file__))
 plugin_manager = PluginManager()
 
-# Фоновые сервисы
+# Фоновые демоны
 hotkey_manager = HotkeyManager(hotkey="alt+space")
 voice_listener = VoiceListener(router=router, trigger_word="кибер")
 telegram_companion = TelegramCompanion(router=router)
@@ -123,6 +124,18 @@ class AppHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+def ensure_ollama_running():
+    """Проверяет, запущен ли Ollama daemon, и при необходимости стартует его в фоне."""
+    try:
+        import urllib.request
+        urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=1)
+        print("[Ollama] Демон уже активен.")
+    except Exception:
+        print("[Ollama] Запуск локального демона нейросети...")
+        ollama_bin = os.path.expandvars(r"%LOCALAPPDATA%\Programs\Ollama\ollama.exe")
+        if os.path.exists(ollama_bin):
+            subprocess.Popen([ollama_bin, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+
 def launch_chrome_or_edge():
     app_url = f"http://127.0.0.1:{PORT}/index.html"
     user_data = os.path.join(os.environ.get("LOCALAPPDATA", ""), "CyberAppProfile")
@@ -149,25 +162,38 @@ def launch_chrome_or_edge():
         webbrowser.open(app_url)
 
 def main():
+    # 1. Автозапуск Ollama при старте
+    ensure_ollama_running()
+
     socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.TCPServer(("127.0.0.1", PORT), AppHandler)
     
-    # 1. Запуск окна приложения
+    # 2. Запуск окна интерфейса
     threading.Timer(0.5, launch_chrome_or_edge).start()
 
-    # 2. Запуск глобального хоткея Alt + Space
+    # 3. Запуск глобального вызова Alt + Space
     try:
         hotkey_manager.start()
     except Exception as e:
         print(f"Ошибка хоткея: {e}")
 
-    # 3. Запуск фонового голосового слушателя
+    # 4. Фоновый голосовой слушатель микрофона
     try:
         voice_listener.start()
     except Exception as e:
         print(f"Ошибка слушателя микрофона: {e}")
 
-    print(f"Cyber Assistant ecosystem active on http://127.0.0.1:{PORT}")
+    # 5. Иконка в системном трее Windows
+    try:
+        tray = SystemTrayManager(
+            on_open=hotkey_manager.bring_window_to_front,
+            on_exit=lambda: os._exit(0)
+        )
+        tray.start()
+    except Exception as e:
+        print(f"Ошибка трея: {e}")
+
+    print(f"Cyber Assistant running on http://127.0.0.1:{PORT}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
