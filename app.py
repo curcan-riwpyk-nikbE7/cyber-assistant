@@ -17,6 +17,7 @@ from core.hotkey import HotkeyManager
 from core.listener import VoiceListener
 from core.telegram_companion import TelegramCompanion
 from core.tray import SystemTrayManager
+from core.gui import run_native_qt_window
 from tools.telemetry import get_system_telemetry
 
 PORT = 54321
@@ -125,65 +126,38 @@ class AppHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 def ensure_ollama_running():
-    """Проверяет, запущен ли Ollama daemon, и при необходимости стартует его в фоне."""
     try:
         import urllib.request
         urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=1)
-        print("[Ollama] Демон уже активен.")
     except Exception:
-        print("[Ollama] Запуск локального демона нейросети...")
         ollama_bin = os.path.expandvars(r"%LOCALAPPDATA%\Programs\Ollama\ollama.exe")
         if os.path.exists(ollama_bin):
             subprocess.Popen([ollama_bin, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=0x08000000)
 
-def launch_chrome_or_edge():
-    app_url = f"http://127.0.0.1:{PORT}/index.html"
-    user_data = os.path.join(os.environ.get("LOCALAPPDATA", ""), "CyberAppProfile")
-
-    browsers = [
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
-    ]
-    target_browser = next((b for b in browsers if os.path.exists(b)), None)
-
-    if target_browser:
-        cmd = [
-            target_browser,
-            f"--app={app_url}",
-            f"--user-data-dir={user_data}",
-            "--window-size=1180,780",
-            "--window-position=200,100"
-        ]
-        subprocess.Popen(cmd)
-    else:
-        import webbrowser
-        webbrowser.open(app_url)
-
-def main():
-    # 1. Автозапуск Ollama при старте
-    ensure_ollama_running()
-
+def start_http_server():
     socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.TCPServer(("127.0.0.1", PORT), AppHandler)
-    
-    # 2. Запуск окна интерфейса
-    threading.Timer(0.5, launch_chrome_or_edge).start()
+    server.serve_forever()
 
-    # 3. Запуск глобального вызова Alt + Space
+def main():
+    # 1. Автостарт Ollama
+    ensure_ollama_running()
+
+    # 2. Сервер UI в отдельном фоновом потоке
+    server_thread = threading.Thread(target=start_http_server, daemon=True)
+    server_thread.start()
+
+    # 3. Фоновые демоны (хоткей, микрофон, системный трей)
     try:
         hotkey_manager.start()
     except Exception as e:
         print(f"Ошибка хоткея: {e}")
 
-    # 4. Фоновый голосовой слушатель микрофона
     try:
         voice_listener.start()
     except Exception as e:
-        print(f"Ошибка слушателя микрофона: {e}")
+        print(f"Ошибка слушателя: {e}")
 
-    # 5. Иконка в системном трее Windows
     try:
         tray = SystemTrayManager(
             on_open=hotkey_manager.bring_window_to_front,
@@ -193,11 +167,9 @@ def main():
     except Exception as e:
         print(f"Ошибка трея: {e}")
 
-    print(f"Cyber Assistant running on http://127.0.0.1:{PORT}")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        server.server_close()
+    # 4. Нативное окно Qt6 WebEngine в главном потоке (гарантированное открытие окна!)
+    app_url = f"http://127.0.0.1:{PORT}/index.html"
+    run_native_qt_window(app_url, title="Кибер — Твой персональный ИИ", width=1180, height=780)
 
 if __name__ == "__main__":
     main()
