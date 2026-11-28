@@ -17,7 +17,7 @@ from core.hotkey import HotkeyManager
 from core.listener import VoiceListener
 from core.telegram_companion import TelegramCompanion
 from core.tray import SystemTrayManager
-from core.gui import run_native_qt_window
+from core.gui import run_native_window
 from tools.telemetry import get_system_telemetry
 
 PORT = 54321
@@ -167,9 +167,9 @@ def main():
     except Exception as e:
         print(f"Ошибка трея: {e}")
 
-    # 4. Нативное окно Qt6 WebEngine в главном потоке (гарантированное открытие окна!)
+    # 4. Нативное PWA окно (100% совместимо с Windows Smart App Control)
     app_url = f"http://127.0.0.1:{PORT}/index.html"
-    run_native_qt_window(app_url, title="Кибер — Твой персональный ИИ", width=1180, height=780)
+    run_native_window(app_url, title="Кибер — Твой персональный ИИ", width=1180, height=780)
 
 if __name__ == "__main__":
     main()
